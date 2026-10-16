@@ -80,12 +80,11 @@ void graph_utils::readfile(const char *arquivo) {
     std::ifstream file(arquivo);
 
     if (!file.is_open()) {
-        std::cout << "ERROR - Unable to access file " << arquivo << std::endl;
+        std::cout << "ERRO: Nao foi possivel abrir o arquivo " << arquivo << "!\n";
         return;
     }
 
-    // Se já havia um grafo carregado, libera a memória antiga antes de
-    // alocar a nova (o arquivo substitui completamente o grafo atual).
+    // Limpa a memória anterior se já houver um grafo carregado
     if (n > 0 && adj != nullptr) {
         for (int v = 0; v < n; v++) {
             delete [] adj[v];
@@ -93,73 +92,76 @@ void graph_utils::readfile(const char *arquivo) {
         delete [] adj;
         delete [] peso;
         delete [] rotulos;
+        adj = nullptr;
+        peso = nullptr;
+        rotulos = nullptr;
+        n = 0;
+        m = 0;
     }
 
-    // O tipo do grafo é lido apenas para avançar no arquivo; o programa
-    // sempre trata o grafo como tipo 6 (orientado com peso nas arestas).
     int graphType, numV;
-    file >> graphType;
-    file >> numV;
+    if (!(file >> graphType >> numV) || numV < 0) {
+        std::cout << "ERRO: Estrutura de arquivo invalida (Cabecalho).\n";
+        file.close();
+        return;
+    }
 
-    // m começa em 0 porque será recontado pelo insertA ao ler as arestas.
     this->n = numV;
     this->m = 0;
 
-    adj = new int*[n];
-    for (int u = 0; u < n; u++) {
-        adj[u] = new int[n];
-        for (int v = 0; v < n; v++) {
-            adj[u][v] = 0;
+    if (n > 0) {
+        adj = new int*[n];
+        for (int u = 0; u < n; u++) {
+            adj[u] = new int[n]();
         }
-    }
 
-    peso = new int[n];
-    rotulos = new std::string[n];
+        peso = new int[n];
+        rotulos = new std::string[n];
 
-    for (int i = 0; i < n; i++) {
-        int id, pV;
-        std::string rotulo;
-        file >> id;
+        for (int i = 0; i < n; i++) {
+            int id, pV;
+            file >> id;
 
-        // O operador >> para no primeiro espaço, então um nome como
-        // "Hollow Knight" viria quebrado em várias palavras. Se o token
-        // começa com aspas, continua lendo palavras e juntando com espaço
-        // até encontrar a que termina com aspas; depois remove as aspas
-        // com substr. Sem aspas, o nome é uma palavra só.
-        std::string aux;
-        file >> aux;
-        if (aux.front() == '"') {
-            while (aux.back() != '"') {
-                std::string temp;
-                file >> temp;
-                aux += " " + temp;
+            std::string aux, rotulo_final;
+            file >> aux;
+            
+            // Tratamento robusto para nomes entre aspas e com espaços
+            if (aux.front() == '"') {
+                rotulo_final = aux;
+                while (rotulo_final.back() != '"' && file >> aux) {
+                    rotulo_final += " " + aux;
+                }
+                if (rotulo_final.size() >= 2) {
+                    rotulo_final = rotulo_final.substr(1, rotulo_final.size() - 2);
+                }
+            } else {
+                rotulo_final = aux;
             }
-            rotulo = aux.substr(1, aux.size() - 2);
-        } else {
-            rotulo = aux;
+
+            file >> pV;
+            if (id >= 0 && id < n) {
+                rotulos[id] = rotulo_final;
+                peso[id] = pV;
+            }
         }
 
-        file >> pV;
-        // Usa o id lido do arquivo como índice (não a ordem da linha),
-        // ignorando ids fora do intervalo para não escrever fora do vetor.
-        if (id >= 0 && id < n) {
-            rotulos[id] = rotulo;
-            peso[id] = pV;
+        int numA;
+        if (file >> numA) {
+            int u, v, pA;
+            for (int a = 0; a < numA; a++) {
+                if (file >> u >> v >> pA) {
+                    // Valida limites e insere na matriz
+                    if (u >= 0 && u < n && v >= 0 && v < n && pA >= 1 && pA <= 100) {
+                        if (adj[u][v] == 0) this->m++;
+                        adj[u][v] = pA;
+                    }
+                }
+            }
         }
-    }
-
-    int numA;
-    file >> numA;
-
-    // Cada aresta passa pelo insertA, que valida os índices e atualiza m.
-    int u, v, pA;
-    for (int a = 0; a < numA; a++) {
-        file >> u >> v >> pA;
-        insertA(u, v, pA);
     }
 
     file.close();
-    std::cout << "Arquivo lido com sucesso! Vertices carregados: " << n << "\n";
+    std::cout << "Arquivo lido com sucesso! Vertices: " << n << " | Arestas validas: " << m << "\n";
 }
 
 // Opção b: Gravar dados no arquivo grafo.txt
@@ -252,12 +254,22 @@ void graph_utils::insertV(int pesoV, std::string nomeJogo) {
 // Opção d: Inserir aresta
 // Grafo orientado: grava só adj[v][w] (v -> w), não adj[w][v].
 void graph_utils::insertA(int v, int w, int pAresta) {
-    if(v >= 0 && v < n && w >= 0 && w < n) {
-        // Só conta uma aresta nova se a posição estava vazia; se a aresta
-        // já existia, apenas o peso é atualizado e m não muda.
-        if(adj[v][w] == 0) m++;
-        adj[v][w] = pAresta;
+    if (v < 0 || v >= n || w < 0 || w >= n) {
+        std::cout << "ERRO: IDs de vertices invalidos!\n";
+        return;
     }
+    
+    // Validação solicitada pelo professor: Similaridade deve estar entre 1 e 100
+    if (pAresta < 1 || pAresta > 100) {
+        std::cout << "ERRO: Peso/Similaridade invalido! Informe um valor entre 1 e 100.\n";
+        return;
+    }
+
+    if (adj[v][w] == 0) {
+        m++; // Incrementa o contador apenas se for uma nova aresta
+    }
+    adj[v][w] = pAresta;
+    std::cout << "Aresta (" << v << " -> " << w << ") inserida/atualizada com peso " << pAresta << "%.\n";
 }
 
 // Opção e: Remover vértice
@@ -265,46 +277,72 @@ void graph_utils::insertA(int v, int w, int pAresta) {
 // Remover a linha/coluna apaga junto todas as arestas que saíam ou
 // chegavam em v. Os vértices depois de v "descem" um índice.
 void graph_utils::removeV(int v) {
-    if(v < 0 || v >= n) return;
+    if (v < 0 || v >= n) {
+        std::cout << "ERRO: ID de vertice invalido!\n";
+        return;
+    }
+
+    // 1. Desconta do contador 'm' todas as arestas ligadas a este vértice (entrantes e saindo)
+    for (int i = 0; i < n; i++) {
+        if (adj[v][i] > 0) m--; // Aresta saindo de v
+        if (i != v && adj[i][v] > 0) m--; // Aresta entrando em v
+    }
 
     int new_n = n - 1;
-    if(new_n <= 0) return;
 
+    // Caso de borda: Remover o último vértice do grafo (Permitir n = 0)
+    if (new_n == 0) {
+        for (int i = 0; i < n; i++) delete [] adj[i];
+        delete [] adj;
+        delete [] peso;
+        delete [] rotulos;
+
+        adj = nullptr;
+        peso = nullptr;
+        rotulos = nullptr;
+        n = 0;
+        m = 0;
+        std::cout << "Ultimo vertice removido. O grafo agora esta vazio (n = 0, m = 0).\n";
+        return;
+    }
+
+    // Criar novas estruturas redimensionadas
     int **new_adj = new int*[new_n];
+    for (int i = 0; i < new_n; i++) {
+        new_adj[i] = new int[new_n]();
+    }
+
     int *new_p = new int[new_n];
     std::string *new_r = new std::string[new_n];
 
-    // new_linha e new_column são índices separados para a matriz nova:
-    // eles só avançam quando a linha/coluna é copiada, então pular v
-    // não deixa "buraco" na matriz nova.
-    int new_linha = 0;
-    for(int a = 0; a < n; a++) {
-        if(a == v) continue; // pula a linha do vértice removido
+    int new_i = 0;
+    for (int i = 0; i < n; i++) {
+        if (i == v) continue;
 
-        new_adj[new_linha] = new int[new_n];
-        int new_column = 0;
-        for(int b = 0; b < n; b++) {
-            if(b == v) continue; // pula a coluna do vértice removido
-            new_adj[new_linha][new_column] = adj[a][b];
-            new_column++;
+        int new_j = 0;
+        for (int j = 0; j < n; j++) {
+            if (j == v) continue;
+            new_adj[new_i][new_j] = adj[i][j];
+            new_j++;
         }
-        new_p[new_linha] = peso[a];
-        new_r[new_linha] = rotulos[a];
-        new_linha++;
+        new_p[new_i] = peso[i];
+        new_r[new_i] = rotulos[i];
+        new_i++;
     }
 
-    // Libera as estruturas antigas e passa a usar as novas.
-    for(int y = 0; y < n; y++) {
-        delete [] adj[y];
-    }
+    // Desalocar estrutura antiga
+    for (int i = 0; i < n; i++) delete [] adj[i];
     delete [] adj;
     delete [] peso;
     delete [] rotulos;
 
+    // Atualizar ponteiros e tamanho
     adj = new_adj;
     peso = new_p;
     rotulos = new_r;
     n = new_n;
+
+    std::cout << "Vertice " << v << " removido com sucesso! Novo total: " << n << " vertices e " << m << " arestas.\n";
 }
 
 // Opção f: Remover aresta
@@ -321,39 +359,24 @@ void graph_utils::removeA(int v, int w) {
 
 // Opção g: Mostrar conteúdo do arquivo
 void graph_utils::showFileContent() {
-    if (n == 0) {
-        std::cout << "O grafo esta vazio! Leia o arquivo primeiro (Opcao 1).\n";
+    std::ifstream file("grafos.txt");
+
+    if (!file.is_open()) {
+        std::cout << "ERRO: Nao foi possivel abrir o arquivo 'grafos.txt' no disco.\n";
+        std::cout << "Certifique-se de que o arquivo existe na pasta do projeto.\n";
         return;
     }
 
     std::cout << "\n=======================================================\n";
-    std::cout << "              INFORMACOES DO GRAFO ATUAL               \n";
+    std::cout << "         CONTEUDO BRUTO DO ARQUIVO (grafos.txt)        \n";
     std::cout << "=======================================================\n";
-    std::cout << " Tipo do Grafo : 6 (Orientado com Peso nas Arestas)\n";
-    std::cout << " Total Vertices: " << n << "\n";
-    std::cout << " Total Arestas : " << m << "\n";
-    std::cout << "-------------------------------------------------------\n";
-    std::cout << " LISTA DE JOGOS (VERTICES):\n";
-    for (int i = 0; i < n; i++) {
-        std::cout << "   [ID " << i << "] " << rotulos[i] << "\n";
+
+    std::string linha;
+    while (std::getline(file, linha)) {
+        std::cout << linha << "\n";
     }
-    std::cout << "-------------------------------------------------------\n";
-    std::cout << " CONEXOES DE SIMILARIDADE (ARESTAS):\n";
-    // Varre a matriz: cada adj[i][j] > 0 é uma aresta i -> j, e o peso
-    // representa a porcentagem de similaridade entre os dois jogos.
-    bool temAresta = false;
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            if (adj[i][j] > 0) {
-                std::cout << "   " << rotulos[i] << " ---> " << rotulos[j] 
-                          << " (Similaridade: " << adj[i][j] << "%)\n";
-                temAresta = true;
-            }
-        }
-    }
-    if (!temAresta) {
-        std::cout << "   Nenhuma aresta/conexao cadastrada.\n";
-    }
+
+    file.close();
     std::cout << "=======================================================\n";
 }
 
