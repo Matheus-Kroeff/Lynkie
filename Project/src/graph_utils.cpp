@@ -66,7 +66,7 @@ graph_utils::~graph_utils() {
     n = 0;
     m = 0;
 
-    std::cout << "Matrix deleted successfully\n";
+    std::cout << "Memoria do grafo liberada com sucesso.\n";
 }
 
 // Opção a: Ler dados do arquivo grafo.txt
@@ -359,7 +359,7 @@ void graph_utils::removeA(int v, int w) {
 
 // Opção g: Mostrar conteúdo do arquivo
 void graph_utils::showFileContent() {
-    std::ifstream file("grafos.txt");
+    std::ifstream file("src/grafos.txt");
 
     if (!file.is_open()) {
         std::cout << "ERRO: Nao foi possivel abrir o arquivo 'grafos.txt' no disco.\n";
