@@ -18,6 +18,7 @@
      c) inserir vértice (novo jogo)
      d) inserir aresta (nova similaridade)
      e) remover vértice
+     e2) remover último vértice
      f) remover aresta
      g) mostrar o conteúdo do grafo (jogos e conexões)
      h) mostrar a matriz de adjacência
@@ -112,17 +113,18 @@ int main() {
     do {
         std::cout << "\n-----------------------------------------------------------\n";
         std::cout << "MENU DE OPCOES:\n";
-        std::cout << "1.  a) Ler dados do arquivo grafos.txt\n";
-        std::cout << "2.  b) Gravar dados no arquivo grafos.txt\n";
-        std::cout << "3.  c) Inserir vertice (Novo Jogo)\n";
-        std::cout << "4.  d) Inserir aresta (Nova Similaridade)\n";
-        std::cout << "5.  e) Remover vertice\n";
-        std::cout << "6.  f) Remover aresta\n";
-        std::cout << "7.  g) Mostrar conteudo do arquivo\n";
-        std::cout << "8.  h) Mostrar grafo (Matriz de Adjacencia)\n";
-        std::cout << "9.  i) Apresentar a conexidade do grafo e o reduzido\n";
-        std::cout << "10. FUNCIONALIDADE: Recomendador de Jogos\n";
-        std::cout << "11. j) Encerrar a aplicacao\n";
+        std::cout << "1.   a)  Ler dados do arquivo grafos.txt\n";
+        std::cout << "2.   b)  Gravar dados no arquivo grafos.txt\n";
+        std::cout << "3.   c)  Inserir vertice (Novo Jogo)\n";
+        std::cout << "4.   d)  Inserir aresta (Nova Similaridade)\n";
+        std::cout << "5.   e)  Remover vertice\n";
+        std::cout << "6.   e2) Remover ultimo vertice\n";
+        std::cout << "7.   f)  Remover aresta\n";
+        std::cout << "8.   g)  Mostrar conteudo do arquivo\n";
+        std::cout << "9.   h)  Mostrar grafo (Matriz de Adjacencia)\n";
+        std::cout << "10.  i)  Apresentar a conexidade do grafo e o reduzido\n";
+        std::cout << "11.  FUNCIONALIDADE: Recomendador de Jogos\n";
+        std::cout << "12.  j)  Encerrar a aplicacao\n";
         std::cout << "-----------------------------------------------------------\n";
         std::cout << "Escolha uma opcao: ";
         std::cin >> opcao;
@@ -165,7 +167,13 @@ int main() {
                 break;
             }
 
-            case 6: { // f) Remover aresta
+            case 6: { // e2) Remover último vértice
+                grafo.removeLastV();
+                break;
+
+            }
+
+            case 7: { // f) Remover aresta
                 int u, v;
                 std::cout << "ID Origem: "; std::cin >> u;
                 std::cout << "ID Destino: "; std::cin >> v;
@@ -174,15 +182,15 @@ int main() {
                 break;
             }
 
-            case 7: // g) Mostrar conteúdo do arquivo
+            case 8: // g) Mostrar conteúdo do arquivo
                 grafo.showFileContent();
                 break;
 
-            case 8: // h) Mostrar grafo
+            case 9: // h) Mostrar grafo
                 grafo.printGraph();
                 break;
 
-            case 9: {// i) Conexidade
+            case 10: {// i) Conexidade
                 int** reduzida;
                 int quant_areas;
                 graph_utils::Connexity resultado = grafo.showConnectivity(reduzida, quant_areas);
@@ -204,7 +212,7 @@ int main() {
 
                 break;
             }
-            case 10: { // Funcionalidade Principal
+            case 11: { // Funcionalidade Principal
                 int id;
                 std::cout << "Digite o ID do jogo escolhido (0 a " << grafo.getNumV() - 1 << "): ";
                 std::cin >> id;
@@ -212,7 +220,7 @@ int main() {
                 break;
             }
 
-            case 11: // j) Encerrar a aplicação
+            case 12: // j) Encerrar a aplicação
                 std::cout << "Encerrando a aplicacao...\n";
                 break;
 
@@ -227,7 +235,7 @@ int main() {
                 break;
             }
         }
-    } while (opcao != 11);
+    } while (opcao != 12);
 
     return 0;
 }

@@ -345,6 +345,17 @@ void graph_utils::removeV(int v) {
     std::cout << "Vertice " << v << " removido com sucesso! Novo total: " << n << " vertices e " << m << " arestas.\n";
 }
 
+void graph_utils::removeLastV() {
+    if(n == 0){
+        std::cout << "ERRO: Grafo vazio.\n";
+        return;
+    }
+    std::cout << "Removendo o ultimo vertice (ID " << (n - 1) << " - " << rotulos[n - 1] << ")...\n";
+
+    // Remove a última posição do Grafo
+    removeV(n - 1);
+}
+
 // Opção f: Remover aresta
 // Remover a aresta v -> w é só zerar a posição na matriz. Só decrementa m
 // se a aresta existia, para o contador não ficar errado.

@@ -44,6 +44,8 @@ public:
     // Opção e: Remover vértice
     void removeV(int v);
 
+    void removeLastV();
+
     // Opção f: Remover aresta
     void removeA(int v, int w);
 
