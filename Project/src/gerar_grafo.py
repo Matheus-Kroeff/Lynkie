@@ -26,8 +26,12 @@ def gerar_grafo_steam_json(json_path="games.json", output_path="grafos.txt", min
     print(f"Lendo o arquivo JSON '{json_path}'...")
     
     if not os.path.exists(json_path):
-        print(f"ERRO: Arquivo '{json_path}' nao encontrado na pasta!")
-        return
+        # Fallback caso o arquivo esteja na pasta src/
+        if os.path.exists(os.path.join("src", json_path)):
+            json_path = os.path.join("src", json_path)
+        else:
+            print(f"ERRO: Arquivo '{json_path}' nao encontrado na pasta!")
+            return
 
     # Leitura do JSON com tratamento para vírgulas sobressalentes
     try:
@@ -44,7 +48,7 @@ def gerar_grafo_steam_json(json_path="games.json", output_path="grafos.txt", min
 
     vertices = []
     
-    # Mapeamento dos Vértices (ID, Nome/Rótulo, Peso)
+    # Mapeamento dos Vértices (ID, Nome/Rótulo, Peso, Tags)
     for idx, (app_id, jogo) in enumerate(dados.items()):
         if not isinstance(jogo, dict):
             continue
@@ -66,21 +70,29 @@ def gerar_grafo_steam_json(json_path="games.json", output_path="grafos.txt", min
         if isinstance(genres_obj, list):
             tags_set.update([str(g).strip().lower() for g in genres_obj])
 
+        # Identifica se o jogo é Indie
+        is_indie = "indie" in tags_set
+
         vertices.append({
             'id': len(vertices),
             'nome': nome_limpo,
             'peso': 0, # Peso 0 no Grafo Tipo 6
-            'tags': tags_set
+            'tags': tags_set,
+            'is_indie': is_indie
         })
 
     num_vertices = len(vertices)
 
-    # Cálculo das Arestas (Similaridade de Jaccard)
+    # Cálculo das Arestas (Similaridade de Jaccard) + Filtro pra Indie
     arestas = []
     for i in range(num_vertices):
         for j in range(num_vertices):
             if i == j:
                 continue 
+
+            # Filtro 1: Jogo DEVE ser Indie
+            if not vertices[j]['is_indie']:
+                continue
             
             set_i = vertices[i]['tags']
             set_j = vertices[j]['tags']
@@ -92,23 +104,53 @@ def gerar_grafo_steam_json(json_path="games.json", output_path="grafos.txt", min
                 
                 # Guarda aresta se atingir a nota de corte
                 if similaridade >= min_similaridade:
-                    arestas.append((i, j, similaridade))
+                    similaridade_validada = min(100, max(1, similaridade))
+                    arestas.append((i, j, similaridade_validada))
+
+    # Filtro 2: Remoção de Vértices Isolados e Reindexação
+    jogos_conectados = set()
+    for u, v, peso in arestas:
+        jogos_conectados.add(u)
+        jogos_conectados.add(v)
+
+    mapeamento_ids = {id_antigo: novo_id for novo_id, id_antigo in enumerate(sorted(jogos_conectados))}
+
+    vertices_finais = []
+    for id_antigo in sorted(jogos_conectados):
+        j_obj = vertices[id_antigo]
+        vertices_finais.append({
+            'id': mapeamento_ids[id_antigo],
+            'nome': j_obj['nome'],
+            'peso': j_obj['peso']
+        })
+
+    arestas_finais = [
+        (mapeamento_ids[u], mapeamento_ids[v], peso)
+        for u, v, peso in arestas
+    ]
+
+    num_vertices_finais = len(vertices_finais)
+    
 
     # Escrita do arquivo grafos.txt para C++
     print(f"Exportando para '{output_path}'...")
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write("6\n") # Tipo do Grafo
-        f.write(f"{num_vertices}\n")
+        f.write(f"{num_vertices_finais}\n")
         
-        for v in vertices:
+        for v in vertices_finais:
             f.write(f'{v["id"]} "{v["nome"]}" {v["peso"]}\n')
             
-        f.write(f"{len(arestas)}\n")
+        f.write(f"{len(arestas_finais)}\n")
         
-        for u, v, peso_aresta in arestas:
+        for u, v, peso_aresta in arestas_finais:
             f.write(f"{u} {v} {peso_aresta}\n")
 
-    print(f"Sucesso! Gerados {num_vertices} vertices e {len(arestas)} arestas no '{output_path}'.")
+    print("=======================================================")
+    print(f" Sucesso! Grafo final gerado em '{output_path}':")
+    print(f"  - Total de Vértices Conectados: {num_vertices_finais} (Filtrados de {num_vertices})")
+    print(f"  - Total de Arestas (Direcionadas a Indies): {len(arestas_finais)}")
+    print("=======================================================")
 
 if __name__ == "__main__":
     gerar_grafo_steam_json()
