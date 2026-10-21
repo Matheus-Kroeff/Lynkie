@@ -630,7 +630,7 @@ void graph_utils::grauVertices() {
         }
 
         std::cout << std::left;
-        std::cout << "    Vertice " << i << ":" << std::endl;
+        std::cout << "    Vertice " << i << " (" << this->rotulos[i] << "):" << std::endl;
         std::cout << "    Grau de saida: " << std::setw(5) << saida;
         std::cout << "    Grau de entrada: " << std::setw(5) << entrada;
         std::cout << "    Grau total: " << std::setw(5) << saida + entrada << std::endl;
