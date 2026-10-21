@@ -711,7 +711,7 @@ void graph_utils::floyd() {
                 int destino;
 
                 // Le origem
-                std::cout << "ID da origem (0 a " << this->n - 1 << "): ";
+                std::cout << "\nID da origem (0 a " << this->n - 1 << "): ";
                 if (!_lerInteiro(origem)) return;
 
                 // Le destino
@@ -731,17 +731,21 @@ void graph_utils::floyd() {
                 }
 
                 // Caso tenha caminho possivel
-                std::cout << "Caminho minimo: ";
+                std::cout << "\nOrigem: " << origem << " (" << this->rotulos[origem] << ")\n";
+                std::cout << "Destino: " << destino << " (" << this->rotulos[destino] << ")\n";
+                std::cout << "Caminho minimo:\n";
 
                 int atual = origem;
-                std::cout << atual << " (" << this->rotulos[atual] << ")";
+                int etapa = 1;
+                std::cout << "    " << etapa << ". " << atual << " (" << this->rotulos[atual] << ")\n";
 
                 while (atual != destino) {
                     atual = proximo[atual][destino];
-                    std::cout << " -> " << atual << " (" << this->rotulos[atual] << ")";
+                    etapa++;
+                    std::cout << "    " << etapa << ". " << atual << " (" << this->rotulos[atual] << ")\n";
                 }
 
-                std::cout << "\nCusto total: " << dist[origem][destino] << "\n";
+                std::cout << "Custo total: " << dist[origem][destino] << "\n";
                 break;
             }
 
