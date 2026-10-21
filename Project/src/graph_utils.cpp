@@ -10,6 +10,7 @@
 #include <queue>
 #include <vector>
 #include <cmath>
+#include <climits>
 #include "graph_utils.h"
 #include <iomanip>
 
@@ -642,8 +643,153 @@ void graph_utils::cliques() {
     return;
 }
 
+bool _lerInteiro(int &valor) {
+    if (std::cin >> valor) return true;
+
+    std::cin.clear();
+    std::cin.ignore(INT_MAX, '\n');
+    std::cout << "Entrada invalida. Informe um numero inteiro.\n";
+    return false;
+}
+
 void graph_utils::floyd() {
-    return;
+    if (this->n == 0) {
+        std::cout << "Grafo vazio. Carregue ou insira vertices antes de executar Floyd.\n";
+        return;
+    }
+
+    // Custo = 101 - similaridade (entre 1 e 100 por aresta)
+    const int INF = INT_MAX;
+    std::vector<std::vector<int>> dist(this->n, std::vector<int>(this->n, INF));
+    std::vector<std::vector<int>> proximo(this->n, std::vector<int>(this->n, -1));
+
+    for (int i = 0; i < this->n; i++) {
+        dist[i][i] = 0;
+        proximo[i][i] = i;
+        for (int j = 0; j < this->n; j++) {
+            // adj = 0   -> Sem aresta
+            // adj = 100 -> Custo 1
+            if (i != j && this->adj[i][j] != 0) {
+                dist[i][j] = 101 - this->adj[i][j];
+                proximo[i][j] = j;
+            }
+        }
+    }
+
+    // Algoritimo de Floyd
+    for (int k = 0; k < this->n; k++) {
+        for (int i = 0; i < this->n; i++) {
+            if (dist[i][k] == INF) continue;
+
+            for (int j = 0; j < this->n; j++) {
+                if (dist[k][j] == INF) continue;
+
+                if (dist[i][k] > INT_MAX - dist[k][j]) continue;
+                int custo = dist[i][k] + dist[k][j];
+
+                // Atualiza o custo e o caminho apenas se houver melhora
+                if (custo < dist[i][j]) {
+                    dist[i][j] = custo;
+                    proximo[i][j] = proximo[i][k];
+                }
+            }
+        }
+    }
+
+    std::cout << "\nFloyd: custo de cada aresta = 101 - similaridade.\n";
+    while (true) {
+        std::cout << "\n1. Consultar caminho minimo\n"
+                  << "2. Mostrar matriz de custos minimos\n"
+                  << "0. Voltar ao menu principal\n"
+                  << "Escolha uma opcao: ";
+        int opcao;
+        if (!_lerInteiro(opcao)) return;
+
+        switch (opcao) {
+            case 1: {
+                int origem;
+                int destino;
+
+                // Le origem
+                std::cout << "ID da origem (0 a " << this->n - 1 << "): ";
+                if (!_lerInteiro(origem)) return;
+
+                // Le destino
+                std::cout << "ID do destino (0 a " << this->n - 1 << "): ";
+                if (!_lerInteiro(destino)) return;
+
+                // Vertices invalidos
+                if (origem < 0 || origem >= this->n || destino < 0 || destino >= this->n) {
+                    std::cout << "IDs de vertices invalidos.\n";
+                    continue;
+                }
+
+                // Caminho inexistente
+                if (proximo[origem][destino] == -1) {
+                    std::cout << "Nao existe caminho de " << origem << " para " << destino << ".\n";
+                    continue;
+                }
+
+                // Caso tenha caminho possivel
+                std::cout << "Caminho minimo: ";
+
+                int atual = origem;
+                std::cout << atual << " (" << this->rotulos[atual] << ")";
+
+                while (atual != destino) {
+                    atual = proximo[atual][destino];
+                    std::cout << " -> " << atual << " (" << this->rotulos[atual] << ")";
+                }
+
+                std::cout << "\nCusto total: " << dist[origem][destino] << "\n";
+                break;
+            }
+
+            case 2: {
+                // Calcula largura para os indices
+                int largura = static_cast<int>(std::to_string(this->n - 1).size()) + 2;
+
+                // Ajusta largura para os custos
+                for (const auto &linha : dist) {
+                    for (int custo : linha) {
+                        if (custo != INF) {
+                            int tamanho = static_cast<int>(std::to_string(custo).size()) + 2;
+                            if (tamanho > largura) largura = tamanho;
+                        }
+                    }
+                }
+
+                // Garante largura minima
+                if (largura < 5) largura = 5;
+                std::cout << "\nCustos minimos (linha = origem, coluna = destino; INF = sem caminho):\n";
+
+                // Mostra IDs dos destinos
+                std::cout << std::setw(largura) << "ID";
+                for (int j = 0; j < this->n; j++) std::cout << std::setw(largura) << j;
+                std::cout << '\n';
+
+                // Mostra custos por origem
+                for (int i = 0; i < this->n; i++) {
+                    std::cout << std::setw(largura) << i;
+
+                    for (int j = 0; j < this->n; j++) {
+                        if (dist[i][j] == INF) std::cout << std::setw(largura) << "INF";
+                        else std::cout << std::setw(largura) << dist[i][j];
+                    }
+
+                    std::cout << '\n';
+                }
+                break;
+            }
+
+            case 0:
+                return;
+
+            default:
+                std::cout << "Opcao invalida.\n";
+                break;
+        }
+    }
 }
 
 void graph_utils::Kruskal() {
