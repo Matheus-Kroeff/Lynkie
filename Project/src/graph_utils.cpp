@@ -13,6 +13,7 @@
 #include <climits>
 #include "graph_utils.h"
 #include <iomanip>
+#include <algorithm>
 
 // Construtor
 // Cria um grafo com n vértices e nenhuma aresta. A representação usada é a
@@ -614,11 +615,168 @@ void graph_utils::recomendar(int v) {
     }
 }
 
+bool _lerInteiro(int &valor) {
+    if (std::cin >> valor) return true;
+    if (std::cin.eof()) return false;
+
+    std::cin.clear();
+    std::cin.ignore(INT_MAX, '\n');
+    std::cout << "Entrada invalida. Informe um numero inteiro.\n";
+    return false;
+}
+
+/**
+ * @brief Recomenda jogos como se fizesse um passeio pelas suas ligacoes.
+ *
+ * Os pontos comecam no jogo escolhido. A cada rodada, 85% seguem pelas
+ * ligacoes (as de maior peso recebem mais) e 15% voltam ao inicio.
+ * Se um jogo nao tem saida, seus pontos tambem voltam ao inicio.
+ * Assim, os pontos chegam ate a jogos ligados por outros jogos.
+ *
+ * O calculo para quando os pontos quase nao mudam ou apos 200 rodadas.
+ * Mostra os 10 jogos com mais pontos, sem incluir o escolhido.
+ * Os pontos indicam visitas nesse passeio, nao porcentagem de semelhanca.
+ */
 void graph_utils::pageRank() {
-    return;
+    if (n == 0) {
+        std::cout << "Grafo vazio. Carregue ou insira jogos antes de executar PageRank.\n";
+        return;
+    }
+
+    // Soma os pesos das arestas de saida de cada vertice
+    std::vector<double> somaPesos(n, 0.0);
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            somaPesos[i] += adj[i][j];
+        }
+    }
+
+    while (true) {
+        std::cout << "\n========== PAGERANK PERSONALIZADO ==========\n"
+                  << "1. Consultar recomendacoes por ID\n"
+                  << "2. Listar jogos e IDs\n"
+                  << "0. Voltar ao menu principal\n"
+                  << "Escolha uma opcao: ";
+        int opcao;
+        if (!_lerInteiro(opcao)) return;
+
+        switch (opcao) {
+            case 1: {
+                // Le o ID do jogo escolhido
+                int origem;
+                std::cout << "ID do jogo (0 a " << n - 1 << "): ";
+                if (!_lerInteiro(origem)) return;
+
+                // Vertice invalido
+                if (origem < 0 || origem >= n) {
+                    std::cout << "ID de jogo invalido.\n";
+                    continue;
+                }
+
+                // 85% segue pelas arestas e 15% volta a origem
+                const double amortecimento = 0.85;
+                const double tolerancia = 1e-10;
+                const int maxIteracoes = 200;
+
+                // Inicia toda a pontuacao no jogo escolhido
+                std::vector<double> rank(n, 0.0);
+                rank[origem] = 1.0;
+
+                // Algoritmo de PageRank personalizado
+                for (int iteracao = 0; iteracao < maxIteracoes; iteracao++) {
+                    std::vector<double> novoRank(n, 0.0);
+
+                    // Reserva a parte que volta a origem
+                    novoRank[origem] = 1.0 - amortecimento;
+
+                    for (int i = 0; i < n; i++) {
+                        if (somaPesos[i] == 0.0) {
+                            // Vertice sem saida devolve a pontuacao a origem
+                            novoRank[origem] += amortecimento * rank[i];
+                            continue;
+                        }
+
+                        // Distribui a pontuacao conforme o peso de cada aresta
+                        for (int j = 0; j < n; j++) {
+                            if (adj[i][j] > 0) {
+                                novoRank[j] += amortecimento * rank[i]
+                                               * adj[i][j] / somaPesos[i];
+                            }
+                        }
+                    }
+
+                    // Compara as pontuacoes e para quando a diferenca for pequena
+                    double diferenca = 0.0;
+                    for (int i = 0; i < n; i++) {
+                        diferenca += std::fabs(novoRank[i] - rank[i]);
+                    }
+
+                    rank.swap(novoRank);
+                    if (diferenca < tolerancia) break;
+                }
+
+                // Seleciona os jogos alcancados, sem incluir a origem
+                std::vector<int> recomendacoes;
+                for (int i = 0; i < n; i++) {
+                    if (i != origem && rank[i] > 0.0) recomendacoes.push_back(i);
+                }
+                // Ordena por pontuacao decrescente, usando o ID em caso de empate
+                std::sort(recomendacoes.begin(), recomendacoes.end(),
+                          [&rank](int a, int b) {
+                              if (rank[a] == rank[b]) return a < b;
+                              return rank[a] > rank[b];
+                          });
+
+                std::cout << "\nRecomendacoes para: " << rotulos[origem]
+                          << " (ID " << origem << ")\n"
+                          << "Pontuacao PageRank considera caminhos diretos e indiretos\n"
+                          << std::endl;
+
+                // Nenhum outro jogo alcancado
+                if (recomendacoes.empty()) {
+                    std::cout << "Nenhum outro jogo alcancavel a partir deste jogo.\n";
+                    continue;
+                }
+
+                // Guarda a formatacao atual e usa seis casas decimais
+                const auto precisaoAnterior = std::cout.precision();
+                const auto formatoAnterior = std::cout.flags();
+                std::cout << std::fixed << std::setprecision(6);
+                // Mostra ate 10 recomendacoes e o tipo de conexao com a origem
+                for (std::size_t i = 0; i < recomendacoes.size() && i < 10; i++) {
+                    int id = recomendacoes[i];
+                    std::cout << i + 1 << ". ID " << id << " (" << rotulos[id] << "):\n"
+                              << "    PageRank: " << rank[id] << '\n'
+                              << (adj[origem][id] > 0 ? "    Conexao direta" : "    Conexao indireta")
+                              << "\n\n";
+                }
+                // Restaura a formatacao da saida
+                std::cout.precision(precisaoAnterior);
+                std::cout.flags(formatoAnterior);
+                break;
+            }
+
+            case 2: {
+                // Lista os jogos com seus IDs
+                for (int i = 0; i < n; i++) {
+                    std::cout << "ID " << i << " - " << rotulos[i] << '\n';
+                }
+                break;
+            }
+
+            case 0:
+                return;
+
+            default:
+                std::cout << "Opcao invalida.\n";
+                break;
+        }
+    }
 }
 
 void graph_utils::grauVertices() {
+    std::cout << "\nGrau dos vertices:" << std::endl;
+
     // Para cada vertice
     for (int i = 0; i < this->n; i++) {
         int saida = 0;
@@ -641,15 +799,6 @@ void graph_utils::grauVertices() {
 
 void graph_utils::cliques() {
     return;
-}
-
-bool _lerInteiro(int &valor) {
-    if (std::cin >> valor) return true;
-
-    std::cin.clear();
-    std::cin.ignore(INT_MAX, '\n');
-    std::cout << "Entrada invalida. Informe um numero inteiro.\n";
-    return false;
 }
 
 void graph_utils::floyd() {

@@ -135,6 +135,7 @@ int main() {
         std::cout << "====================================================="    << std::endl;
         std::cout << "Escolha uma opcao: ";
         std::cin >> opcao;
+        if (std::cin.eof()) return 0;
 
         switch (opcao) {
             case 1: // a) Ler dados do arquivo
@@ -232,7 +233,6 @@ int main() {
                 break;
 
             case 13:
-                std::cout << "\nGrau dos vertices:" << std::endl;
                 grafo.grauVertices();
                 break;
 
