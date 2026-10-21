@@ -611,3 +611,24 @@ void graph_utils::recomendar(int v) {
         std::cout << " Nenhuma conexao de similaridade encontrada para este jogo.\n";
     }
 }
+
+void graph_utils::pageRank() {
+    return;
+}
+
+
+void graph_utils::grauVertices() {
+    return;
+}
+
+void graph_utils::cliques() {
+    return;
+}
+
+void graph_utils::floyd() {
+    return;
+}
+
+void graph_utils::Kruskal() {
+    return;
+}

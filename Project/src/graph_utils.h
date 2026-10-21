@@ -17,14 +17,8 @@ private:
     int *peso;             // Vetor de pesos dos vértices
     std::string *rotulos;  // Vetor com os nomes dos jogos
 
-
-
-	
-
-
 public:
-	enum Connexity {C0, C1, C2, C3};
-	
+    enum Connexity {C0, C1, C2, C3};
 
     graph_utils(int n);
     ~graph_utils();
@@ -64,6 +58,16 @@ public:
     // Getters auxiliares
     int getNumV() const { return n; }
     int getNumA() const { return m; }
+
+
+    // ===== Parte 3 =====
+
+    void pageRank();
+
+    void grauVertices();
+    void cliques();
+    void floyd();
+    void Kruskal();
 };
 
 #endif
