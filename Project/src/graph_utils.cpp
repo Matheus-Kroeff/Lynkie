@@ -625,141 +625,133 @@ bool _lerInteiro(int &valor) {
     return false;
 }
 
-/**
- * @brief Recomenda jogos como se fizesse um passeio pelas suas ligacoes.
- *
- * Os pontos comecam no jogo escolhido. A cada rodada, 85% seguem pelas
- * ligacoes (as de maior peso recebem mais) e 15% voltam ao inicio.
- * Se um jogo nao tem saida, seus pontos tambem voltam ao inicio.
- * Assim, os pontos chegam ate a jogos ligados por outros jogos.
- *
- * O calculo para quando os pontos quase nao mudam ou apos 200 rodadas.
- * Mostra os 10 jogos com mais pontos, sem incluir o escolhido.
- * Os pontos indicam visitas nesse passeio, nao porcentagem de semelhanca.
- */
+/*
+    Os pontos comecam no jogo escolhido. A cada rodada, 85% seguem pelas
+    ligacoes (as de maior peso recebem mais) e 15% voltam ao inicio.
+    Se um jogo nao tem saida, seus pontos tambem voltam ao inicio.
+    Assim, os pontos chegam ate a jogos ligados por outros jogos.
+
+    O calculo para quando os pontos quase nao mudam ou apos 200 rodadas.
+    Mostra os 10 jogos com mais pontos, sem incluir o escolhido.
+    Os pontos indicam visitas nesse passeio, nao porcentagem de semelhanca.
+*/
 void graph_utils::pageRank() {
-    if (n == 0) {
+    if (this->n == 0) {
         std::cout << "Grafo vazio. Carregue ou insira jogos antes de executar PageRank.\n";
         return;
     }
 
-    // Soma os pesos das arestas de saida de cada vertice
-    std::vector<double> somaPesos(n, 0.0);
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            somaPesos[i] += adj[i][j];
+    std::vector<double> somaPesos(this->n, 0.0);
+    for (int i = 0; i < this->n; i++) {
+        for (int j = 0; j < this->n; j++) {
+            somaPesos[i] += this->adj[i][j];
         }
     }
 
     while (true) {
-        std::cout << "\n========== PAGERANK PERSONALIZADO ==========\n"
-                  << "1. Consultar recomendacoes por ID\n"
-                  << "2. Listar jogos e IDs\n"
-                  << "0. Voltar ao menu principal\n"
-                  << "Escolha uma opcao: ";
+        std::cout << "\n========== PAGERANK PERSONALIZADO =========="   << std::endl;
+        std::cout << "1. Consultar recomendacoes por ID"                << std::endl;
+        std::cout << "2. Listar jogos e IDs"                            << std::endl;
+        std::cout << "0. Voltar ao menu principal"                      << std::endl;
+        std::cout << "Escolha uma opcao: ";
+
         int opcao;
         if (!_lerInteiro(opcao)) return;
 
         switch (opcao) {
             case 1: {
-                // Le o ID do jogo escolhido
                 int origem;
-                std::cout << "ID do jogo (0 a " << n - 1 << "): ";
+                std::cout << "ID do jogo (0 a " << this->n - 1 << "): ";
                 if (!_lerInteiro(origem)) return;
 
-                // Vertice invalido
-                if (origem < 0 || origem >= n) {
+                if (origem < 0 || origem >= this->n) {
                     std::cout << "ID de jogo invalido.\n";
                     continue;
                 }
 
-                // 85% segue pelas arestas e 15% volta a origem
                 const double amortecimento = 0.85;
                 const double tolerancia = 1e-10;
                 const int maxIteracoes = 200;
 
-                // Inicia toda a pontuacao no jogo escolhido
-                std::vector<double> rank(n, 0.0);
-                rank[origem] = 1.0;
+                std::vector<double> pontuacao(this->n, 0.0);
+                pontuacao[origem] = 1.0;
 
-                // Algoritmo de PageRank personalizado
+                // Espalha os pontos pelos pesos das ligacoes e devolve uma parte a origem
                 for (int iteracao = 0; iteracao < maxIteracoes; iteracao++) {
-                    std::vector<double> novoRank(n, 0.0);
+                    std::vector<double> novaPontuacao(this->n, 0.0);
 
-                    // Reserva a parte que volta a origem
-                    novoRank[origem] = 1.0 - amortecimento;
+                    novaPontuacao[origem] = 1.0 - amortecimento;
 
-                    for (int i = 0; i < n; i++) {
+                    for (int i = 0; i < this->n; i++) {
                         if (somaPesos[i] == 0.0) {
-                            // Vertice sem saida devolve a pontuacao a origem
-                            novoRank[origem] += amortecimento * rank[i];
+                            // Sem saida, os pontos voltam a origem para nao se perderem
+                            novaPontuacao[origem] += amortecimento * pontuacao[i];
                             continue;
                         }
 
-                        // Distribui a pontuacao conforme o peso de cada aresta
-                        for (int j = 0; j < n; j++) {
-                            if (adj[i][j] > 0) {
-                                novoRank[j] += amortecimento * rank[i]
-                                               * adj[i][j] / somaPesos[i];
+                        for (int j = 0; j < this->n; j++) {
+                            if (this->adj[i][j] > 0) {
+                                novaPontuacao[j] += amortecimento * pontuacao[i]
+                                                   * this->adj[i][j] / somaPesos[i];
                             }
                         }
                     }
 
-                    // Compara as pontuacoes e para quando a diferenca for pequena
+                    // Para quando a soma das mudancas nas pontuacoes fica abaixo da tolerancia
                     double diferenca = 0.0;
-                    for (int i = 0; i < n; i++) {
-                        diferenca += std::fabs(novoRank[i] - rank[i]);
+                    for (int i = 0; i < this->n; i++) {
+                        diferenca += std::fabs(novaPontuacao[i] - pontuacao[i]);
                     }
 
-                    rank.swap(novoRank);
+                    pontuacao.swap(novaPontuacao);
                     if (diferenca < tolerancia) break;
                 }
 
-                // Seleciona os jogos alcancados, sem incluir a origem
                 std::vector<int> recomendacoes;
-                for (int i = 0; i < n; i++) {
-                    if (i != origem && rank[i] > 0.0) recomendacoes.push_back(i);
+                for (int i = 0; i < this->n; i++) {
+                    if (i != origem && pontuacao[i] > 0.0) recomendacoes.push_back(i);
                 }
-                // Ordena por pontuacao decrescente, usando o ID em caso de empate
+
                 std::sort(recomendacoes.begin(), recomendacoes.end(),
-                          [&rank](int a, int b) {
-                              if (rank[a] == rank[b]) return a < b;
-                              return rank[a] > rank[b];
+                          [&pontuacao](int a, int b) {
+                              if (pontuacao[a] == pontuacao[b]) return a < b;
+                              return pontuacao[a] > pontuacao[b];
                           });
 
-                std::cout << "\nRecomendacoes para: " << rotulos[origem]
+                std::cout << "\nRecomendacoes para: " << this->rotulos[origem]
                           << " (ID " << origem << ")\n"
                           << "Pontuacao PageRank considera caminhos diretos e indiretos\n"
-                          << std::endl;
+                          << "\n";
 
-                // Nenhum outro jogo alcancado
                 if (recomendacoes.empty()) {
                     std::cout << "Nenhum outro jogo alcancavel a partir deste jogo.\n";
                     continue;
                 }
 
-                // Guarda a formatacao atual e usa seis casas decimais
-                const auto precisaoAnterior = std::cout.precision();
-                const auto formatoAnterior = std::cout.flags();
+                std::streamsize precisaoAnterior = std::cout.precision();
+                std::ios::fmtflags formatoAnterior = std::cout.flags();
                 std::cout << std::fixed << std::setprecision(6);
-                // Mostra ate 10 recomendacoes e o tipo de conexao com a origem
+
                 for (std::size_t i = 0; i < recomendacoes.size() && i < 10; i++) {
                     int id = recomendacoes[i];
-                    std::cout << i + 1 << ". ID " << id << " (" << rotulos[id] << "):\n"
-                              << "    PageRank: " << rank[id] << '\n'
-                              << (adj[origem][id] > 0 ? "    Conexao direta" : "    Conexao indireta")
-                              << "\n\n";
+                    std::cout << i + 1 << ". ID " << id << " (" << this->rotulos[id] << "):\n";
+                    std::cout << "    PageRank: " << pontuacao[id] << '\n';
+
+                    if (this->adj[origem][id] > 0) {
+                        std::cout << "    Conexao direta\n\n";
+                    } else {
+                        std::cout << "    Conexao indireta\n\n";
+                    }
                 }
-                // Restaura a formatacao da saida
+
                 std::cout.precision(precisaoAnterior);
                 std::cout.flags(formatoAnterior);
                 break;
             }
 
             case 2: {
-                // Lista os jogos com seus IDs
-                for (int i = 0; i < n; i++) {
-                    std::cout << "ID " << i << " - " << rotulos[i] << '\n';
+                for (int i = 0; i < this->n; i++) {
+                    std::cout << "ID " << i << " - " << this->rotulos[i] << '\n';
                 }
                 break;
             }
@@ -775,25 +767,23 @@ void graph_utils::pageRank() {
 }
 
 void graph_utils::grauVertices() {
-    std::cout << "\nGrau dos vertices:" << std::endl;
+    std::cout << "\nGrau dos vertices:\n";
 
-    // Para cada vertice
     for (int i = 0; i < this->n; i++) {
         int saida = 0;
         int entrada = 0;
 
-        // Percorrer toda a lista vertical e horizontal
         for (int j = 0; j < this->n; j++) {
-            if (this->adj[i][j]) saida++;
-            if (this->adj[j][i]) entrada++;
+            if (this->adj[i][j] > 0) saida++;
+            if (this->adj[j][i] > 0) entrada++;
         }
 
         std::cout << std::left;
-        std::cout << "    Vertice " << i << " (" << this->rotulos[i] << "):" << std::endl;
+        std::cout << "    Vertice " << i << " (" << this->rotulos[i] << "):\n";
         std::cout << "    Grau de saida: " << std::setw(5) << saida;
         std::cout << "    Grau de entrada: " << std::setw(5) << entrada;
-        std::cout << "    Grau total: " << std::setw(5) << saida + entrada << std::endl;
-        std::cout << std::endl;
+        std::cout << "    Grau total: " << std::setw(5) << saida + entrada << '\n';
+        std::cout << '\n';
     }
 }
 
@@ -807,7 +797,7 @@ void graph_utils::floyd() {
         return;
     }
 
-    // Custo = 101 - similaridade (entre 1 e 100 por aresta)
+    // Custo = 101 - similaridade: ligacoes mais parecidas custam menos.
     const int INF = INT_MAX;
     std::vector<std::vector<int>> dist(this->n, std::vector<int>(this->n, INF));
     std::vector<std::vector<int>> proximo(this->n, std::vector<int>(this->n, -1));
@@ -816,8 +806,6 @@ void graph_utils::floyd() {
         dist[i][i] = 0;
         proximo[i][i] = i;
         for (int j = 0; j < this->n; j++) {
-            // adj = 0   -> Sem aresta
-            // adj = 100 -> Custo 1
             if (i != j && this->adj[i][j] != 0) {
                 dist[i][j] = 101 - this->adj[i][j];
                 proximo[i][j] = j;
@@ -825,7 +813,7 @@ void graph_utils::floyd() {
         }
     }
 
-    // Algoritimo de Floyd
+    // Testa se passar por k encurta o caminho de i ate j.
     for (int k = 0; k < this->n; k++) {
         for (int i = 0; i < this->n; i++) {
             if (dist[i][k] == INF) continue;
@@ -836,7 +824,6 @@ void graph_utils::floyd() {
                 if (dist[i][k] > INT_MAX - dist[k][j]) continue;
                 int custo = dist[i][k] + dist[k][j];
 
-                // Atualiza o custo e o caminho apenas se houver melhora
                 if (custo < dist[i][j]) {
                     dist[i][j] = custo;
                     proximo[i][j] = proximo[i][k];
@@ -847,10 +834,11 @@ void graph_utils::floyd() {
 
     std::cout << "\nFloyd: custo de cada aresta = 101 - similaridade.\n";
     while (true) {
-        std::cout << "\n1. Consultar caminho minimo\n"
-                  << "2. Mostrar matriz de custos minimos\n"
-                  << "0. Voltar ao menu principal\n"
-                  << "Escolha uma opcao: ";
+        std::cout << "\n1. Consultar caminho minimo" << std::endl;
+        std::cout << "2. Mostrar matriz de custos minimos" << std::endl;
+        std::cout << "0. Voltar ao menu principal" << std::endl;
+        std::cout << "Escolha uma opcao: ";
+
         int opcao;
         if (!_lerInteiro(opcao)) return;
 
@@ -859,27 +847,22 @@ void graph_utils::floyd() {
                 int origem;
                 int destino;
 
-                // Le origem
                 std::cout << "\nID da origem (0 a " << this->n - 1 << "): ";
                 if (!_lerInteiro(origem)) return;
 
-                // Le destino
                 std::cout << "ID do destino (0 a " << this->n - 1 << "): ";
                 if (!_lerInteiro(destino)) return;
 
-                // Vertices invalidos
                 if (origem < 0 || origem >= this->n || destino < 0 || destino >= this->n) {
                     std::cout << "IDs de vertices invalidos.\n";
                     continue;
                 }
 
-                // Caminho inexistente
                 if (proximo[origem][destino] == -1) {
                     std::cout << "Nao existe caminho de " << origem << " para " << destino << ".\n";
                     continue;
                 }
 
-                // Caso tenha caminho possivel
                 std::cout << "\nOrigem: " << origem << " (" << this->rotulos[origem] << ")\n";
                 std::cout << "Destino: " << destino << " (" << this->rotulos[destino] << ")\n";
                 std::cout << "Caminho minimo:\n";
@@ -899,35 +882,33 @@ void graph_utils::floyd() {
             }
 
             case 2: {
-                // Calcula largura para os indices
+                // Ajusta as colunas ao maior tamanho entre os IDs e os custos.
                 int largura = static_cast<int>(std::to_string(this->n - 1).size()) + 2;
 
-                // Ajusta largura para os custos
-                for (const auto &linha : dist) {
-                    for (int custo : linha) {
-                        if (custo != INF) {
-                            int tamanho = static_cast<int>(std::to_string(custo).size()) + 2;
+                for (int i = 0; i < this->n; i++) {
+                    for (int j = 0; j < this->n; j++) {
+                        if (dist[i][j] != INF) {
+                            int tamanho = static_cast<int>(std::to_string(dist[i][j]).size()) + 2;
                             if (tamanho > largura) largura = tamanho;
                         }
                     }
                 }
 
-                // Garante largura minima
                 if (largura < 5) largura = 5;
                 std::cout << "\nCustos minimos (linha = origem, coluna = destino; INF = sem caminho):\n";
 
-                // Mostra IDs dos destinos
                 std::cout << std::setw(largura) << "ID";
                 for (int j = 0; j < this->n; j++) std::cout << std::setw(largura) << j;
                 std::cout << '\n';
 
-                // Mostra custos por origem
                 for (int i = 0; i < this->n; i++) {
                     std::cout << std::setw(largura) << i;
 
                     for (int j = 0; j < this->n; j++) {
-                        if (dist[i][j] == INF) std::cout << std::setw(largura) << "INF";
-                        else std::cout << std::setw(largura) << dist[i][j];
+                        if (dist[i][j] == INF)
+                            std::cout << std::setw(largura) << "INF";
+                        else
+                            std::cout << std::setw(largura) << dist[i][j];
                     }
 
                     std::cout << '\n';
