@@ -11,6 +11,7 @@
 #include <vector>
 #include <cmath>
 #include "graph_utils.h"
+#include <iomanip>
 
 // Construtor
 // Cria um grafo com n vértices e nenhuma aresta. A representação usada é a
@@ -616,9 +617,25 @@ void graph_utils::pageRank() {
     return;
 }
 
-
 void graph_utils::grauVertices() {
-    return;
+    // Para cada vertice
+    for (int i = 0; i < this->n; i++) {
+        int saida = 0;
+        int entrada = 0;
+
+        // Percorrer toda a lista vertical e horizontal
+        for (int j = 0; j < this->n; j++) {
+            if (this->adj[i][j]) saida++;
+            if (this->adj[j][i]) entrada++;
+        }
+
+        std::cout << std::left;
+        std::cout << "    Vertice " << i << ":" << std::endl;
+        std::cout << "    Grau de saida: " << std::setw(5) << saida;
+        std::cout << "    Grau de entrada: " << std::setw(5) << entrada;
+        std::cout << "    Grau total: " << std::setw(5) << saida + entrada << std::endl;
+        std::cout << std::endl;
+    }
 }
 
 void graph_utils::cliques() {

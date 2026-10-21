@@ -232,6 +232,7 @@ int main() {
                 break;
 
             case 13:
+                std::cout << "\nGrau dos vertices:" << std::endl;
                 grafo.grauVertices();
                 break;
 
