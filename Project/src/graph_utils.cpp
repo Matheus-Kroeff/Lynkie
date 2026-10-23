@@ -1046,12 +1046,35 @@ void graph_utils::coloracao() {
         }
     }
 
+    int mostrarJogos;
+    std::cout << "\nMostrar os jogos de cada classe? (1 - Sim, 0 - Nao): ";
+    if (!_lerInteiro(mostrarJogos)) return;
+
+    if (mostrarJogos != 0 && mostrarJogos != 1) {
+        std::cout << "Opcao invalida." << std::endl;
+        return;
+    }
+
     std::cout << "\n========== COLORAÇÃO DO GRAFO ==========\n\n";
     std::cout << "Total de jogos: " << this->n << "\n";
     std::cout << "Cores utilizadas: " << quantidade << "\n\n";
 
     for (int cor = 1; cor <= quantidade; cor++) {
         std::cout << "Classe " << cor << ": " << classes[cor] << " jogos\n";
+
+        // Mostra os nomes apenas se o usuario escolher
+        if (mostrarJogos == 1) {
+            bool primeiro = true;
+            std::cout << "    ";
+            for (int i = 0; i < this->n; i++) {
+                if (cores[i] == cor) {
+                    if (!primeiro) std::cout << ", ";
+                    std::cout << this->rotulos[i];
+                    primeiro = false;
+                }
+            }
+            std::cout << std::endl << std::endl;
+        }
     }
 
     std::cout << "\nColoração válida: " << (valida ? "SIM" : "NÃO") << "\n";
