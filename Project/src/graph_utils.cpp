@@ -805,7 +805,7 @@ void _buscarCliques(
             if (i > 0) std::cout << ", ";
             std::cout << rotulos[clique[i]];
         }
-        std::cout << "\n   Tamanho: " << tamanho << "\n\n";
+        std::cout << "\n   Tamanho: " << tamanho << "\n" << std::endl;
         return;
     }
 
@@ -815,17 +815,14 @@ void _buscarCliques(
         std::vector<int> novosVisitados;
 
         // Mantem apenas jogos com ligacao de ida e volta com v
-        for (int u : candidatos) {
-            if (u != v && adj[v][u] > 0 && adj[u][v] > 0) {
-                novosCandidatos.push_back(u);
-            }
-        }
-        for (int u : visitados) {
-            if (adj[v][u] > 0 && adj[u][v] > 0) {
-                novosVisitados.push_back(u);
-            }
-        }
+        for (int u : candidatos)
+            if (u != v && adj[v][u] && adj[u][v]) novosCandidatos.push_back(u);
 
+        for (int u : visitados)
+            if (adj[v][u] && adj[u][v]) novosVisitados.push_back(u);
+
+        // Adiciona v e chama a busca novamente para tentar ampliar o clique
+        // Quando a chamada termina, remove v para testar os outros candidatos
         clique.push_back(v);
         _buscarCliques(adj, rotulos, clique, novosCandidatos, novosVisitados, quantidade, maior);
         clique.pop_back();
@@ -837,12 +834,12 @@ void _buscarCliques(
 
 void graph_utils::cliques() {
     if (this->n == 0) {
-        std::cout << "Grafo vazio. Carregue ou insira jogos antes de buscar cliques.\n";
+        std::cout << "\nGrafo vazio. Carregue ou insira jogos antes de buscar cliques.\n";
         return;
     }
 
     int origem;
-    std::cout << "ID do jogo (0 a " << this->n - 1 << "): ";
+    std::cout << "\nID do jogo (0 a " << this->n - 1 << "): ";
     if (!_lerInteiro(origem)) return;
 
     if (origem < 0 || origem >= this->n) {
@@ -854,20 +851,20 @@ void graph_utils::cliques() {
     std::vector<int> clique = {origem};
     std::vector<int> candidatos;
     for (int i = 0; i < this->n; i++) {
-        if (i != origem && this->adj[origem][i] > 0 && this->adj[i][origem] > 0) {
+        if (i != origem && this->adj[origem][i]  && this->adj[i][origem] ) {
             candidatos.push_back(i);
         }
     }
 
-    std::cout << "\nJogo selecionado: " << this->rotulos[origem] << "\n\n";
-    std::cout << "Cliques maximais encontrados:\n\n";
+    std::cout << "\nJogo selecionado: " << this->rotulos[origem] << "\n" << std::endl;
+    std::cout << "Cliques maximais encontrados:\n" << std::endl;
 
     int quantidade = 0;
     int maior = 0;
     _buscarCliques(this->adj, this->rotulos, clique, candidatos, {}, quantidade, maior);
 
     std::cout << "Maior clique encontrado para " << this->rotulos[origem] << ": "
-              << maior << (maior == 1 ? " jogo\n" : " jogos\n");
+              << maior << (maior == 1 ? " jogo\n" : " jogos\n") << std::endl;
 }
 
 void graph_utils::floyd() {
