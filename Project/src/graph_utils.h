@@ -62,10 +62,19 @@ public:
 
     // ===== Parte 3 =====
 
+    // Recomendar jogos com PageRank a partir de um jogo escolhido
     void pageRank();
+
+    // Mostrar os graus de entrada, saida e total de cada vertice
     void grauVertices();
+
+    // Buscar cliques maximais com ligacoes de ida e volta contendo o jogo escolhido
     void cliques();
+
+    // Consultar caminhos de menor custo entre jogos pelo algoritmo de Floyd
     void floyd();
+
+    // Colorir os jogos sem considerar o sentido das arestas e mostrar as classes
     void coloracao();
 };
 
