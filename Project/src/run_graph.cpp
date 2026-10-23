@@ -23,7 +23,12 @@
      g) mostrar o conteúdo do grafo (jogos e conexões)
      h) mostrar a matriz de adjacência
      i) apresentar a conexidade (C0 a C3) e o grafo reduzido
-     10) recomendador de jogos (funcionalidade principal)
+     11) recomendador de jogos (funcionalidade principal)
+     12) recomendação personalizada com PageRank
+     13) mostrar graus dos vértices
+     14) buscar cliques maximais
+     15) consultar caminhos mínimos com Floyd
+     16) colorir o grafo sem considerar o sentido das arestas
      j) encerrar a aplicação
    Contém também a função auxiliar conexidadeParaTexto, que converte a
    categoria de conexidade (enum Connexity) em texto.
@@ -68,6 +73,7 @@
   25/09/2026  | Matheus-Kroeff  | d7043a0  | conexidade
   25/09/2026  | Matheus-Kroeff  | afdf147  | grafos.txt atualizado
   27/09/2026  | dedeDuarte      | c861f27  | Domentários expplicando código
+  27/09/2026  | dedeDuarte      | cd94721  | Docs: Relatório de commits e alterações
   27/09/2026  | dedeDuarte      | 8c039e5  | Tratamento caso entrada de caractere inválidos,
               |                 |          | como 'a' -> 'Z'
   27/09/2026  | dedeDuarte      | cece91e  | Códigos compilados removidos do repositório
@@ -77,7 +83,38 @@
               |                 |          | 2. Como rodar sem make
               |                 |          | 3. Como usar
               |                 |          | 4. O que cada arquivo faz
+  27/09/2026  | dedeDuarte      | 3f54e50  | docs(Relatório de commits): Relatório de commits
+              |                 |          | atualizado
   27/09/2026  | dedeDuarte      | c54a8eb  | Agora programa consegue achar arquivo dentro e fora de src/
+  27/09/2026  | dedeDuarte      | bcd19b0  | doc: Relatório de commits atualizado
+  27/09/2026  | dedeDuarte      | 481a703  | Docs: Nome do projeto alterado (Lykie)
+  27/09/2026  | dedeDuarte      | 0c3da29  | Docs: Nome do projeto alterado (LYNKIE)
+  16/10/2026  | Matheus-Kroeff  | a2695e0  | Correção do Readfile, tratamento de nomes compostos e
+              |                 |          | valida peso de arestas (1-100)
+  16/10/2026  | Matheus-Kroeff  | 287e4b7  | Pequenas correções
+  15/10/2026  | mackcoder       | a365cdd  | Delete Relatorio_Ativdades/src directory
+  15/10/2026  | mackcoder       | 7ce2adf  | Revise README with project details and updates
+  15/10/2026  | mackcoder       | db4810e  | Create README for Graph Theory Project Lynkie
+  16/10/2026  | Matheus-Kroeff  | 89fc3b5  | Filtro de Indie no python gerador do grafo.txt
+  16/10/2026  | Matheus-Kroeff  | 8a61a8b  | Função para remover o ultimo vertice
+  20/10/2026  | Matheus-Kroeff  | fc2d873  | Update games.json
+  21/10/2026  | Matheus-Kroeff  | 390dd3a  | Aumentando o json
+  20/10/2026  | dedeDuarte      | 8ea63ef  | Chore: Preparando espaço para novas funções
+  20/10/2026  | dedeDuarte      | 019677e  | Feat(graph): Calculador de grau de vértices adicionado
+  20/10/2026  | dedeDuarte      | a03cc0e  | Feat(grauVertices): Agora mostra o nome do jogo
+  21/10/2026  | dedeDuarte      | 9102079  | Feat(floyd): Algoritmo de caminhos mínimos adicionado
+  21/10/2026  | dedeDuarte      | aaba27c  | Feat(floyd): Melhoria na impressão do caminho mínimo
+  21/10/2026  | dedeDuarte      | ee57187  | Feat(pageRank): Recomendação personalizada de jogos
+              |                 |          | adicionada
+  21/10/2026  | dedeDuarte      | c0ebd7a  | Refactor(graph): Padronização da escrita e
+              |                 |          | simplificação dos comentários
+  22/10/2026  | dedeDuarte      | 7624c46  | Feat(cliques): Função que identifica cliques Maximais
+              |                 |          | implementadas
+  22/10/2026  | dedeDuarte      | d1578b6  | Feat(cliques): Simplifica busca e melhora comentarios
+              |                 |          | e prints
+  23/10/2026  | dedeDuarte      | 78a4eba  | Feat(coloracao): Coloração de grafos implementada
+  23/10/2026  | dedeDuarte      | 9ed96fa  | Feat(coloracao): Adiciona opção de listar jogos de
+              |                 |          | cada classe
 
  -----------------------------------------------------------------------------
 ===============================================================================
