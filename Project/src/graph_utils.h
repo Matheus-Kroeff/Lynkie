@@ -63,11 +63,10 @@ public:
     // ===== Parte 3 =====
 
     void pageRank();
-
     void grauVertices();
     void cliques();
     void floyd();
-    void Kruskal();
+    void coloracao();
 };
 
 #endif

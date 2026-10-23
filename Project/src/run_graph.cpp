@@ -129,7 +129,7 @@ int main() {
         std::cout << "13. Analisar grau dos vértices"                           << std::endl;
         std::cout << "14. Encontrar cliques"                                    << std::endl;
         std::cout << "15. Caminhos mínimos (Floyd)"                             << std::endl;
-        std::cout << "16. Árvore geradora mínima (Kruskal)"                     << std::endl;
+        std::cout << "16. Coloração de grafos"                                  << std::endl;
         std::cout                                                               << std::endl;
         std::cout << "0.  j)  Encerrar a aplicacao"                             << std::endl;
         std::cout << "====================================================="    << std::endl;
@@ -245,7 +245,7 @@ int main() {
                 break;
 
             case 16:
-                grafo.Kruskal();
+                grafo.coloracao();
                 break;
 
             case 0: // j) Encerrar a aplicação

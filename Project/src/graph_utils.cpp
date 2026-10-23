@@ -1002,6 +1002,57 @@ void graph_utils::floyd() {
     }
 }
 
-void graph_utils::Kruskal() {
-    return;
+void graph_utils::coloracao() {
+    if (this->n == 0) {
+        std::cout << "\nGrafo vazio. Carregue ou insira jogos antes de colorir.\n";
+        return;
+    }
+
+    // Comeca com todos os jogos sem cor
+    std::vector<int> cores(this->n, 0);
+
+    for (int v = 0; v < this->n; v++) {
+        for (int cor = 1; cor <= this->n; cor++) {
+            bool disponivel = true;
+
+            // Jogos ligados em qualquer sentido devem ter cores diferentes
+            for (int u = 0; u < this->n; u++) {
+                if ((this->adj[v][u] || this->adj[u][v]) && cores[u] == cor) {
+                    disponivel = false;
+                    break;
+                }
+            }
+
+            // Usa a primeira cor disponivel e passa para o proximo jogo
+            if (disponivel) {
+                cores[v] = cor;
+                break;
+            }
+        }
+    }
+
+    int quantidade = 0;
+    std::vector<int> classes(this->n + 1, 0);
+    for (int i = 0; i < this->n; i++) {
+        classes[cores[i]]++;
+        if (cores[i] > quantidade) quantidade = cores[i];
+    }
+
+    // Confere se existe alguma ligacao entre jogos da mesma cor
+    bool valida = true;
+    for (int i = 0; i < this->n; i++) {
+        for (int j = 0; j < this->n; j++) {
+            if (this->adj[i][j] && cores[i] == cores[j]) valida = false;
+        }
+    }
+
+    std::cout << "\n========== COLORAÇÃO DO GRAFO ==========\n\n";
+    std::cout << "Total de jogos: " << this->n << "\n";
+    std::cout << "Cores utilizadas: " << quantidade << "\n\n";
+
+    for (int cor = 1; cor <= quantidade; cor++) {
+        std::cout << "Classe " << cor << ": " << classes[cor] << " jogos\n";
+    }
+
+    std::cout << "\nColoração válida: " << (valida ? "SIM" : "NÃO") << "\n";
 }
