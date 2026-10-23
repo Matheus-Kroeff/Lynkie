@@ -10,7 +10,10 @@
 #include <queue>
 #include <vector>
 #include <cmath>
+#include <climits>
 #include "graph_utils.h"
+#include <iomanip>
+#include <algorithm>
 
 // Construtor
 // Cria um grafo com n vértices e nenhuma aresta. A representação usada é a
@@ -610,4 +613,446 @@ void graph_utils::recomendar(int v) {
     if (!encontrou) {
         std::cout << " Nenhuma conexao de similaridade encontrada para este jogo.\n";
     }
+}
+
+bool _lerInteiro(int &valor) {
+    if (std::cin >> valor) return true;
+    if (std::cin.eof()) return false;
+
+    std::cin.clear();
+    std::cin.ignore(INT_MAX, '\n');
+    std::cout << "Entrada invalida. Informe um numero inteiro.\n";
+    return false;
+}
+
+/*
+    Os pontos comecam no jogo escolhido. A cada rodada, 85% seguem pelas
+    ligacoes (as de maior peso recebem mais) e 15% voltam ao inicio.
+    Se um jogo nao tem saida, seus pontos tambem voltam ao inicio.
+    Assim, os pontos chegam ate a jogos ligados por outros jogos.
+
+    O calculo para quando os pontos quase nao mudam ou apos 200 rodadas.
+    Mostra os 10 jogos com mais pontos, sem incluir o escolhido.
+    Os pontos indicam visitas nesse passeio, nao porcentagem de semelhanca.
+*/
+void graph_utils::pageRank() {
+    if (this->n == 0) {
+        std::cout << "Grafo vazio. Carregue ou insira jogos antes de executar PageRank.\n";
+        return;
+    }
+
+    std::vector<double> somaPesos(this->n, 0.0);
+    for (int i = 0; i < this->n; i++) {
+        for (int j = 0; j < this->n; j++) {
+            somaPesos[i] += this->adj[i][j];
+        }
+    }
+
+    while (true) {
+        std::cout << "\n========== PAGERANK PERSONALIZADO =========="   << std::endl;
+        std::cout << "1. Consultar recomendacoes por ID"                << std::endl;
+        std::cout << "2. Listar jogos e IDs"                            << std::endl;
+        std::cout << "0. Voltar ao menu principal"                      << std::endl;
+        std::cout << "Escolha uma opcao: ";
+
+        int opcao;
+        if (!_lerInteiro(opcao)) return;
+
+        switch (opcao) {
+            case 1: {
+                int origem;
+                std::cout << "ID do jogo (0 a " << this->n - 1 << "): ";
+                if (!_lerInteiro(origem)) return;
+
+                if (origem < 0 || origem >= this->n) {
+                    std::cout << "ID de jogo invalido.\n";
+                    continue;
+                }
+
+                const double amortecimento = 0.85;
+                const double tolerancia = 1e-10;
+                const int maxIteracoes = 200;
+
+                std::vector<double> pontuacao(this->n, 0.0);
+                pontuacao[origem] = 1.0;
+
+                // Espalha os pontos pelos pesos das ligacoes e devolve uma parte a origem
+                for (int iteracao = 0; iteracao < maxIteracoes; iteracao++) {
+                    std::vector<double> novaPontuacao(this->n, 0.0);
+
+                    novaPontuacao[origem] = 1.0 - amortecimento;
+
+                    for (int i = 0; i < this->n; i++) {
+                        if (somaPesos[i] == 0.0) {
+                            // Sem saida, os pontos voltam a origem para nao se perderem
+                            novaPontuacao[origem] += amortecimento * pontuacao[i];
+                            continue;
+                        }
+
+                        for (int j = 0; j < this->n; j++) {
+                            if (this->adj[i][j] > 0) {
+                                novaPontuacao[j] += amortecimento * pontuacao[i]
+                                                   * this->adj[i][j] / somaPesos[i];
+                            }
+                        }
+                    }
+
+                    // Para quando a soma das mudancas nas pontuacoes fica abaixo da tolerancia
+                    double diferenca = 0.0;
+                    for (int i = 0; i < this->n; i++) {
+                        diferenca += std::fabs(novaPontuacao[i] - pontuacao[i]);
+                    }
+
+                    pontuacao.swap(novaPontuacao);
+                    if (diferenca < tolerancia) break;
+                }
+
+                std::vector<int> recomendacoes;
+                for (int i = 0; i < this->n; i++) {
+                    if (i != origem && pontuacao[i] > 0.0) recomendacoes.push_back(i);
+                }
+
+                std::sort(recomendacoes.begin(), recomendacoes.end(),
+                          [&pontuacao](int a, int b) {
+                              if (pontuacao[a] == pontuacao[b]) return a < b;
+                              return pontuacao[a] > pontuacao[b];
+                          });
+
+                std::cout << "\nRecomendacoes para: " << this->rotulos[origem]
+                          << " (ID " << origem << ")\n"
+                          << "Pontuacao PageRank considera caminhos diretos e indiretos\n"
+                          << "\n";
+
+                if (recomendacoes.empty()) {
+                    std::cout << "Nenhum outro jogo alcancavel a partir deste jogo.\n";
+                    continue;
+                }
+
+                std::streamsize precisaoAnterior = std::cout.precision();
+                std::ios::fmtflags formatoAnterior = std::cout.flags();
+                std::cout << std::fixed << std::setprecision(6);
+
+                for (std::size_t i = 0; i < recomendacoes.size() && i < 10; i++) {
+                    int id = recomendacoes[i];
+                    std::cout << i + 1 << ". ID " << id << " (" << this->rotulos[id] << "):\n";
+                    std::cout << "    PageRank: " << pontuacao[id] << '\n';
+
+                    if (this->adj[origem][id] > 0) {
+                        std::cout << "    Conexao direta\n\n";
+                    } else {
+                        std::cout << "    Conexao indireta\n\n";
+                    }
+                }
+
+                std::cout.precision(precisaoAnterior);
+                std::cout.flags(formatoAnterior);
+                break;
+            }
+
+            case 2: {
+                for (int i = 0; i < this->n; i++) {
+                    std::cout << "ID " << i << " - " << this->rotulos[i] << '\n';
+                }
+                break;
+            }
+
+            case 0:
+                return;
+
+            default:
+                std::cout << "Opcao invalida.\n";
+                break;
+        }
+    }
+}
+
+void graph_utils::grauVertices() {
+    std::cout << "\nGrau dos vertices:\n";
+
+    for (int i = 0; i < this->n; i++) {
+        int saida = 0;
+        int entrada = 0;
+
+        for (int j = 0; j < this->n; j++) {
+            if (this->adj[i][j] > 0) saida++;
+            if (this->adj[j][i] > 0) entrada++;
+        }
+
+        std::cout << std::left;
+        std::cout << "    Vertice " << i << " (" << this->rotulos[i] << "):\n";
+        std::cout << "    Grau de saida: " << std::setw(5) << saida;
+        std::cout << "    Grau de entrada: " << std::setw(5) << entrada;
+        std::cout << "    Grau total: " << std::setw(5) << saida + entrada << '\n';
+        std::cout << '\n';
+    }
+}
+
+void _buscarCliques(
+    int **adj,
+    const std::string *rotulos,
+    std::vector<int> &clique, std::vector<int> candidatos,
+    std::vector<int> visitados,
+    int &quantidade, int &maior
+) {
+    // Se nenhum jogo pode ser adicionado, o clique e maximal
+    if (candidatos.empty() && visitados.empty()) {
+        quantidade++;
+        int tamanho = clique.size();
+        if (tamanho > maior) maior = tamanho;
+
+        std::cout << quantidade << ". ";
+        for (int i = 0; i < tamanho; i++) {
+            if (i > 0) std::cout << ", ";
+            std::cout << rotulos[clique[i]];
+        }
+        std::cout << "\n   Tamanho: " << tamanho << "\n" << std::endl;
+        return;
+    }
+
+    while (!candidatos.empty()) {
+        int v = candidatos.front();
+        std::vector<int> novosCandidatos;
+        std::vector<int> novosVisitados;
+
+        // Mantem apenas jogos com ligacao de ida e volta com v
+        for (int u : candidatos)
+            if (u != v && adj[v][u] && adj[u][v]) novosCandidatos.push_back(u);
+
+        for (int u : visitados)
+            if (adj[v][u] && adj[u][v]) novosVisitados.push_back(u);
+
+        // Adiciona v e chama a busca novamente para tentar ampliar o clique
+        // Quando a chamada termina, remove v para testar os outros candidatos
+        clique.push_back(v);
+        _buscarCliques(adj, rotulos, clique, novosCandidatos, novosVisitados, quantidade, maior);
+        clique.pop_back();
+
+        candidatos.erase(candidatos.begin());
+        visitados.push_back(v);
+    }
+}
+
+void graph_utils::cliques() {
+    if (this->n == 0) {
+        std::cout << "\nGrafo vazio. Carregue ou insira jogos antes de buscar cliques.\n";
+        return;
+    }
+
+    int origem;
+    std::cout << "\nID do jogo (0 a " << this->n - 1 << "): ";
+    if (!_lerInteiro(origem)) return;
+
+    if (origem < 0 || origem >= this->n) {
+        std::cout << "ID de jogo invalido.\n";
+        return;
+    }
+
+    // Comeca com o jogo escolhido e seus vizinhos de ida e volta
+    std::vector<int> clique = {origem};
+    std::vector<int> candidatos;
+    for (int i = 0; i < this->n; i++) {
+        if (i != origem && this->adj[origem][i]  && this->adj[i][origem] ) {
+            candidatos.push_back(i);
+        }
+    }
+
+    std::cout << "\nJogo selecionado: " << this->rotulos[origem] << "\n" << std::endl;
+    std::cout << "Cliques maximais encontrados:\n" << std::endl;
+
+    int quantidade = 0;
+    int maior = 0;
+    _buscarCliques(this->adj, this->rotulos, clique, candidatos, {}, quantidade, maior);
+
+    std::cout << "Maior clique encontrado para " << this->rotulos[origem] << ": "
+              << maior << (maior == 1 ? " jogo\n" : " jogos\n") << std::endl;
+}
+
+void graph_utils::floyd() {
+    if (this->n == 0) {
+        std::cout << "Grafo vazio. Carregue ou insira vertices antes de executar Floyd.\n";
+        return;
+    }
+
+    // Custo = 101 - similaridade: ligacoes mais parecidas custam menos
+    const int INF = INT_MAX;
+    std::vector<std::vector<int>> dist(this->n, std::vector<int>(this->n, INF));
+    std::vector<std::vector<int>> proximo(this->n, std::vector<int>(this->n, -1));
+
+    for (int i = 0; i < this->n; i++) {
+        dist[i][i] = 0;
+        proximo[i][i] = i;
+        for (int j = 0; j < this->n; j++) {
+            if (i != j && this->adj[i][j] != 0) {
+                dist[i][j] = 101 - this->adj[i][j];
+                proximo[i][j] = j;
+            }
+        }
+    }
+
+    // Testa se passar por k encurta o caminho de i ate j
+    for (int k = 0; k < this->n; k++) {
+        for (int i = 0; i < this->n; i++) {
+            if (dist[i][k] == INF) continue;
+
+            for (int j = 0; j < this->n; j++) {
+                if (dist[k][j] == INF) continue;
+
+                if (dist[i][k] > INT_MAX - dist[k][j]) continue;
+                int custo = dist[i][k] + dist[k][j];
+
+                if (custo < dist[i][j]) {
+                    dist[i][j] = custo;
+                    proximo[i][j] = proximo[i][k];
+                }
+            }
+        }
+    }
+
+    std::cout << "\nFloyd: custo de cada aresta = 101 - similaridade.\n";
+    while (true) {
+        std::cout << "\n1. Consultar caminho minimo" << std::endl;
+        std::cout << "2. Mostrar matriz de custos minimos" << std::endl;
+        std::cout << "0. Voltar ao menu principal" << std::endl;
+        std::cout << "Escolha uma opcao: ";
+
+        int opcao;
+        if (!_lerInteiro(opcao)) return;
+
+        switch (opcao) {
+            case 1: {
+                int origem;
+                int destino;
+
+                std::cout << "\nID da origem (0 a " << this->n - 1 << "): ";
+                if (!_lerInteiro(origem)) return;
+
+                std::cout << "ID do destino (0 a " << this->n - 1 << "): ";
+                if (!_lerInteiro(destino)) return;
+
+                if (origem < 0 || origem >= this->n || destino < 0 || destino >= this->n) {
+                    std::cout << "IDs de vertices invalidos.\n";
+                    continue;
+                }
+
+                if (proximo[origem][destino] == -1) {
+                    std::cout << "Nao existe caminho de " << origem << " para " << destino << ".\n";
+                    continue;
+                }
+
+                std::cout << "\nOrigem: " << origem << " (" << this->rotulos[origem] << ")\n";
+                std::cout << "Destino: " << destino << " (" << this->rotulos[destino] << ")\n";
+                std::cout << "Caminho minimo:\n";
+
+                int atual = origem;
+                int etapa = 1;
+                std::cout << "    " << etapa << ". " << atual << " (" << this->rotulos[atual] << ")\n";
+
+                while (atual != destino) {
+                    atual = proximo[atual][destino];
+                    etapa++;
+                    std::cout << "    " << etapa << ". " << atual << " (" << this->rotulos[atual] << ")\n";
+                }
+
+                std::cout << "Custo total: " << dist[origem][destino] << "\n";
+                break;
+            }
+
+            case 2: {
+                // Ajusta as colunas ao maior tamanho entre os IDs e os custos
+                int largura = static_cast<int>(std::to_string(this->n - 1).size()) + 2;
+
+                for (int i = 0; i < this->n; i++) {
+                    for (int j = 0; j < this->n; j++) {
+                        if (dist[i][j] != INF) {
+                            int tamanho = static_cast<int>(std::to_string(dist[i][j]).size()) + 2;
+                            if (tamanho > largura) largura = tamanho;
+                        }
+                    }
+                }
+
+                if (largura < 5) largura = 5;
+                std::cout << "\nCustos minimos (linha = origem, coluna = destino; INF = sem caminho):\n";
+
+                std::cout << std::setw(largura) << "ID";
+                for (int j = 0; j < this->n; j++) std::cout << std::setw(largura) << j;
+                std::cout << '\n';
+
+                for (int i = 0; i < this->n; i++) {
+                    std::cout << std::setw(largura) << i;
+
+                    for (int j = 0; j < this->n; j++) {
+                        if (dist[i][j] == INF)
+                            std::cout << std::setw(largura) << "INF";
+                        else
+                            std::cout << std::setw(largura) << dist[i][j];
+                    }
+
+                    std::cout << '\n';
+                }
+                break;
+            }
+
+            case 0:
+                return;
+
+            default:
+                std::cout << "Opcao invalida.\n";
+                break;
+        }
+    }
+}
+
+void graph_utils::coloracao() {
+    if (this->n == 0) {
+        std::cout << "\nGrafo vazio. Carregue ou insira jogos antes de colorir.\n";
+        return;
+    }
+
+    // Comeca com todos os jogos sem cor
+    std::vector<int> cores(this->n, 0);
+
+    for (int v = 0; v < this->n; v++) {
+        for (int cor = 1; cor <= this->n; cor++) {
+            bool disponivel = true;
+
+            // Jogos ligados em qualquer sentido devem ter cores diferentes
+            for (int u = 0; u < this->n; u++) {
+                if ((this->adj[v][u] || this->adj[u][v]) && cores[u] == cor) {
+                    disponivel = false;
+                    break;
+                }
+            }
+
+            // Usa a primeira cor disponivel e passa para o proximo jogo
+            if (disponivel) {
+                cores[v] = cor;
+                break;
+            }
+        }
+    }
+
+    int quantidade = 0;
+    std::vector<int> classes(this->n + 1, 0);
+    for (int i = 0; i < this->n; i++) {
+        classes[cores[i]]++;
+        if (cores[i] > quantidade) quantidade = cores[i];
+    }
+
+    // Confere se existe alguma ligacao entre jogos da mesma cor
+    bool valida = true;
+    for (int i = 0; i < this->n; i++) {
+        for (int j = 0; j < this->n; j++) {
+            if (this->adj[i][j] && cores[i] == cores[j]) valida = false;
+        }
+    }
+
+    std::cout << "\n========== COLORAÇÃO DO GRAFO ==========\n\n";
+    std::cout << "Total de jogos: " << this->n << "\n";
+    std::cout << "Cores utilizadas: " << quantidade << "\n\n";
+
+    for (int cor = 1; cor <= quantidade; cor++) {
+        std::cout << "Classe " << cor << ": " << classes[cor] << " jogos\n";
+    }
+
+    std::cout << "\nColoração válida: " << (valida ? "SIM" : "NÃO") << "\n";
 }

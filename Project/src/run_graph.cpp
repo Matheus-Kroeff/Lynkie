@@ -106,28 +106,36 @@ int main() {
         arquivo = "src/grafos.txt";
     }
 
-    std::cout << "===========================================================\n";
-    std::cout << "   SYSTEM RECOMMEND-A-GAME (TEORIA DOS GRAFOS)             \n";
-    std::cout << "===========================================================\n";
+    std::cout << "==========================================================="  << std::endl;
+    std::cout << "   SYSTEM RECOMMEND-A-GAME (TEORIA DOS GRAFOS)             "  << std::endl;
+    std::cout << "===========================================================\n" << std::endl;
 
     do {
-        std::cout << "\n-----------------------------------------------------------\n";
-        std::cout << "MENU DE OPCOES:\n";
-        std::cout << "1.   a)  Ler dados do arquivo grafos.txt\n";
-        std::cout << "2.   b)  Gravar dados no arquivo grafos.txt\n";
-        std::cout << "3.   c)  Inserir vertice (Novo Jogo)\n";
-        std::cout << "4.   d)  Inserir aresta (Nova Similaridade)\n";
-        std::cout << "5.   e)  Remover vertice\n";
-        std::cout << "6.   e2) Remover ultimo vertice\n";
-        std::cout << "7.   f)  Remover aresta\n";
-        std::cout << "8.   g)  Mostrar conteudo do arquivo\n";
-        std::cout << "9.   h)  Mostrar grafo (Matriz de Adjacencia)\n";
-        std::cout << "10.  i)  Apresentar a conexidade do grafo e o reduzido\n";
-        std::cout << "11.  FUNCIONALIDADE: Recomendador de Jogos\n";
-        std::cout << "12.  j)  Encerrar a aplicacao\n";
-        std::cout << "-----------------------------------------------------------\n";
+        std::cout << "MENU DE OPCOES:" << std::endl;
+        std::cout << "====================================================="    << std::endl;
+        std::cout << "1.  a)  Ler dados do arquivo grafos.txt"                  << std::endl;
+        std::cout << "2.  b)  Gravar dados no arquivo grafos.txt"               << std::endl;
+        std::cout << "3.  c)  Inserir vertice (Novo Jogo)"                      << std::endl;
+        std::cout << "4.  d)  Inserir aresta (Nova Similaridade)"               << std::endl;
+        std::cout << "5.  e)  Remover vertice"                                  << std::endl;
+        std::cout << "6.  e2) Remover ultimo vertice"                           << std::endl;
+        std::cout << "7.  f)  Remover aresta"                                   << std::endl;
+        std::cout << "8.  g)  Mostrar conteudo do arquivo"                      << std::endl;
+        std::cout << "9.  h)  Mostrar grafo (Matriz de Adjacencia)"             << std::endl;
+        std::cout << "10. i)  Apresentar a conexidade do grafo e o reduzido"    << std::endl;
+        std::cout << "11. FUNCIONALIDADE: Recomendador de Jogos"                << std::endl;
+        std::cout                                                               << std::endl;
+        std::cout << "12. Recomendação personalizada (PageRank)"                << std::endl;
+        std::cout << "13. Analisar grau dos vértices"                           << std::endl;
+        std::cout << "14. Encontrar cliques"                                    << std::endl;
+        std::cout << "15. Caminhos mínimos (Floyd)"                             << std::endl;
+        std::cout << "16. Coloração de grafos"                                  << std::endl;
+        std::cout                                                               << std::endl;
+        std::cout << "0.  j)  Encerrar a aplicacao"                             << std::endl;
+        std::cout << "====================================================="    << std::endl;
         std::cout << "Escolha uma opcao: ";
         std::cin >> opcao;
+        if (std::cin.eof()) return 0;
 
         switch (opcao) {
             case 1: // a) Ler dados do arquivo
@@ -220,7 +228,27 @@ int main() {
                 break;
             }
 
-            case 12: // j) Encerrar a aplicação
+            case 12:
+                grafo.pageRank();
+                break;
+
+            case 13:
+                grafo.grauVertices();
+                break;
+
+            case 14:
+                grafo.cliques();
+                break;
+
+            case 15:
+                grafo.floyd();
+                break;
+
+            case 16:
+                grafo.coloracao();
+                break;
+
+            case 0: // j) Encerrar a aplicação
                 std::cout << "Encerrando a aplicacao...\n";
                 break;
 
@@ -235,7 +263,7 @@ int main() {
                 break;
             }
         }
-    } while (opcao != 12);
+    } while (opcao != 0);
 
     return 0;
 }
