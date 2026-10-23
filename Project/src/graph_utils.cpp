@@ -787,8 +787,87 @@ void graph_utils::grauVertices() {
     }
 }
 
+void _buscarCliques(
+    int **adj,
+    const std::string *rotulos,
+    std::vector<int> &clique, std::vector<int> candidatos,
+    std::vector<int> visitados,
+    int &quantidade, int &maior
+) {
+    // Se nenhum jogo pode ser adicionado, o clique e maximal
+    if (candidatos.empty() && visitados.empty()) {
+        quantidade++;
+        int tamanho = clique.size();
+        if (tamanho > maior) maior = tamanho;
+
+        std::cout << quantidade << ". ";
+        for (int i = 0; i < tamanho; i++) {
+            if (i > 0) std::cout << ", ";
+            std::cout << rotulos[clique[i]];
+        }
+        std::cout << "\n   Tamanho: " << tamanho << "\n\n";
+        return;
+    }
+
+    while (!candidatos.empty()) {
+        int v = candidatos.front();
+        std::vector<int> novosCandidatos;
+        std::vector<int> novosVisitados;
+
+        // Mantem apenas jogos com ligacao de ida e volta com v
+        for (int u : candidatos) {
+            if (u != v && adj[v][u] > 0 && adj[u][v] > 0) {
+                novosCandidatos.push_back(u);
+            }
+        }
+        for (int u : visitados) {
+            if (adj[v][u] > 0 && adj[u][v] > 0) {
+                novosVisitados.push_back(u);
+            }
+        }
+
+        clique.push_back(v);
+        _buscarCliques(adj, rotulos, clique, novosCandidatos, novosVisitados, quantidade, maior);
+        clique.pop_back();
+
+        candidatos.erase(candidatos.begin());
+        visitados.push_back(v);
+    }
+}
+
 void graph_utils::cliques() {
-    return;
+    if (this->n == 0) {
+        std::cout << "Grafo vazio. Carregue ou insira jogos antes de buscar cliques.\n";
+        return;
+    }
+
+    int origem;
+    std::cout << "ID do jogo (0 a " << this->n - 1 << "): ";
+    if (!_lerInteiro(origem)) return;
+
+    if (origem < 0 || origem >= this->n) {
+        std::cout << "ID de jogo invalido.\n";
+        return;
+    }
+
+    // Comeca com o jogo escolhido e seus vizinhos de ida e volta
+    std::vector<int> clique = {origem};
+    std::vector<int> candidatos;
+    for (int i = 0; i < this->n; i++) {
+        if (i != origem && this->adj[origem][i] > 0 && this->adj[i][origem] > 0) {
+            candidatos.push_back(i);
+        }
+    }
+
+    std::cout << "\nJogo selecionado: " << this->rotulos[origem] << "\n\n";
+    std::cout << "Cliques maximais encontrados:\n\n";
+
+    int quantidade = 0;
+    int maior = 0;
+    _buscarCliques(this->adj, this->rotulos, clique, candidatos, {}, quantidade, maior);
+
+    std::cout << "Maior clique encontrado para " << this->rotulos[origem] << ": "
+              << maior << (maior == 1 ? " jogo\n" : " jogos\n");
 }
 
 void graph_utils::floyd() {
@@ -797,7 +876,7 @@ void graph_utils::floyd() {
         return;
     }
 
-    // Custo = 101 - similaridade: ligacoes mais parecidas custam menos.
+    // Custo = 101 - similaridade: ligacoes mais parecidas custam menos
     const int INF = INT_MAX;
     std::vector<std::vector<int>> dist(this->n, std::vector<int>(this->n, INF));
     std::vector<std::vector<int>> proximo(this->n, std::vector<int>(this->n, -1));
@@ -813,7 +892,7 @@ void graph_utils::floyd() {
         }
     }
 
-    // Testa se passar por k encurta o caminho de i ate j.
+    // Testa se passar por k encurta o caminho de i ate j
     for (int k = 0; k < this->n; k++) {
         for (int i = 0; i < this->n; i++) {
             if (dist[i][k] == INF) continue;
@@ -882,7 +961,7 @@ void graph_utils::floyd() {
             }
 
             case 2: {
-                // Ajusta as colunas ao maior tamanho entre os IDs e os custos.
+                // Ajusta as colunas ao maior tamanho entre os IDs e os custos
                 int largura = static_cast<int>(std::to_string(this->n - 1).size()) + 2;
 
                 for (int i = 0; i < this->n; i++) {
