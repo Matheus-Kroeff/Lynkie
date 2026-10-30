@@ -76,6 +76,8 @@ public:
 
     // Colorir os jogos sem considerar o sentido das arestas e mostrar as classes
     void coloracao();
+
+    void checkEuleriano();
 };
 
 #endif

@@ -1,0 +1,32 @@
+name: Atualizar CHANGELOG
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  changelog:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Gerar CHANGELOG.md
+        run: |
+          {
+            echo "# Histórico de Alterações – Lynkie"
+            echo ""
+            echo "| Data | Autor | Commit | Descrição |"
+            echo "|------|-------|--------|-----------|"
+            git log --reverse --date=format:%d/%m/%Y \
+              --pretty=format:"| %ad | %an | %h | %s |" \
+              --perl-regexp --author='^(?!github-actions).*$'
+          } > CHANGELOG.md
+      - name: Commitar se mudou
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git diff --cached --quiet || git commit -m "docs: atualiza CHANGELOG [skip ci]"
+          git push

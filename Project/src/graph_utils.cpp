@@ -1079,3 +1079,55 @@ void graph_utils::coloracao() {
 
     std::cout << "\nColoração válida: " << (valida ? "SIM" : "NÃO") << "\n";
 }
+
+void graph_utils::checkEuleriano() {
+    int qtdeImpares = 0;
+    std::vector<int> grau(n, 0);
+
+    // 1) Grau de cada vértice e contagem dos ímpares
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i != j && (adj[i][j] > 0 || adj[j][i] > 0))
+                grau[i]++;
+        }
+        if (grau[i] % 2 == 1) qtdeImpares++;
+    }
+
+    // 2) Conexidade: todos os vértices com aresta devem estar
+    //    na mesma componente (busca em profundidade com pilha)
+    int inicio = -1;
+    for (int i = 0; i < n; i++)
+        if (grau[i] > 0) { inicio = i; break; }
+
+    bool conexo = true;
+    if (inicio != -1) {
+        std::vector<bool> visitado(n, false);
+        std::vector<int> pilha = {inicio};
+        visitado[inicio] = true;
+        while (!pilha.empty()) {
+            int v = pilha.back(); pilha.pop_back();
+            for (int w = 0; w < n; w++) {
+                if (!visitado[w] && (adj[v][w] > 0 || adj[w][v] > 0)) {
+                    visitado[w] = true;
+                    pilha.push_back(w);
+                }
+            }
+        }
+        for (int i = 0; i < n; i++)
+            if (grau[i] > 0 && !visitado[i]) { conexo = false; break; }
+    }
+
+    // 3) Resultado
+    std::cout << "\n=== Percurso Euleriano ===\n";
+    std::cout << "Vertices de grau impar: " << qtdeImpares << "\n";
+
+    if (!conexo)
+        std::cout << "Grafo desconexo: NAO admite percurso euleriano.\n";
+    else if (qtdeImpares == 0)
+        std::cout << "Grafo EULERIANO: admite ciclo euleriano.\n";
+    else if (qtdeImpares == 2)
+        std::cout << "Grafo SEMI-EULERIANO: admite caminho euleriano.\n";
+    else
+        std::cout << "NAO admite percurso euleriano (mais de 2 vertices de grau impar).\n";
+}
+

@@ -148,28 +148,38 @@ int main() {
     std::cout << "===========================================================\n" << std::endl;
 
     do {
-        std::cout << "MENU DE OPCOES:" << std::endl;
-        std::cout << "====================================================="    << std::endl;
-        std::cout << "1.  a)  Ler dados do arquivo grafos.txt"                  << std::endl;
-        std::cout << "2.  b)  Gravar dados no arquivo grafos.txt"               << std::endl;
-        std::cout << "3.  c)  Inserir vertice (Novo Jogo)"                      << std::endl;
-        std::cout << "4.  d)  Inserir aresta (Nova Similaridade)"               << std::endl;
-        std::cout << "5.  e)  Remover vertice"                                  << std::endl;
-        std::cout << "6.  e2) Remover ultimo vertice"                           << std::endl;
-        std::cout << "7.  f)  Remover aresta"                                   << std::endl;
-        std::cout << "8.  g)  Mostrar conteudo do arquivo"                      << std::endl;
-        std::cout << "9.  h)  Mostrar grafo (Matriz de Adjacencia)"             << std::endl;
-        std::cout << "10. i)  Apresentar a conexidade do grafo e o reduzido"    << std::endl;
-        std::cout << "11. FUNCIONALIDADE: Recomendador de Jogos"                << std::endl;
-        std::cout                                                               << std::endl;
-        std::cout << "12. Recomendação personalizada (PageRank)"                << std::endl;
-        std::cout << "13. Analisar grau dos vértices"                           << std::endl;
-        std::cout << "14. Encontrar cliques"                                    << std::endl;
-        std::cout << "15. Caminhos mínimos (Floyd)"                             << std::endl;
-        std::cout << "16. Coloração de grafos"                                  << std::endl;
-        std::cout                                                               << std::endl;
-        std::cout << "0.  j)  Encerrar a aplicacao"                             << std::endl;
-        std::cout << "====================================================="    << std::endl;
+        std::cout << "\n  MENU PRINCIPAL\n";
+        std::cout << "  -------------------------------------------------------\n";
+        std::cout << "   [ Arquivo ]\n";
+        std::cout << "     1.  Ler dados do arquivo grafos.txt\n";
+        std::cout << "     2.  Gravar dados no arquivo grafos.txt\n";
+        std::cout << "     8.  Mostrar conteudo do arquivo\n";
+        std::cout << "   [ Edicao do grafo ]\n";
+        std::cout << "     3.  Inserir vertice (novo jogo)\n";
+        std::cout << "     4.  Inserir aresta (nova similaridade)\n";
+        std::cout << "     5.  Remover vertice\n";
+        std::cout << "     6.  Remover ultimo vertice\n";
+        std::cout << "     7.  Remover aresta\n";
+        std::cout << "   [ Visualizacao ]\n";
+        std::cout << "     9.  Mostrar grafo (matriz de adjacencia)\n";
+        std::cout << "     10. Conexidade do grafo e grafo reduzido\n";
+
+        std::cout << "\n  MANUTENCAO / INFORMACOES ADICIONAIS\n";
+        std::cout << "  -------------------------------------------------------\n";
+        std::cout << "   [ Recomendacao ]\n";
+        std::cout << "     11. Recomendador de jogos\n";
+        std::cout << "     12. Recomendacao personalizada (PageRank)\n";
+        std::cout << "     15. Caminhos minimos (Floyd)\n";
+        std::cout << "   [ Caracteristicas do grafo ]\n";
+        std::cout << "     13. Grau dos vertices\n";
+        std::cout << "     14. Cliques\n";
+        std::cout << "     16. Coloracao\n";
+        std::cout << "     17. Percurso euleriano\n";
+        std::cout << "     18. Ciclo hamiltoniano\n";
+
+        std::cout << "\n  -------------------------------------------------------\n";
+        std::cout << "     0.  Encerrar a aplicacao\n";
+        std::cout << "=========================================================\n";
         std::cout << "Escolha uma opcao: ";
         std::cin >> opcao;
         if (std::cin.eof()) return 0;
@@ -283,6 +293,10 @@ int main() {
 
             case 16:
                 grafo.coloracao();
+                break;
+
+            case 17:
+                grafo.checkEuleriano();
                 break;
 
             case 0: // j) Encerrar a aplicação
