@@ -71,3 +71,4 @@
 | 23/10/2026 | André Duarte | 5cbbb73 | Merge pull request #11 from Matheus-Kroeff/dede |
 | 23/10/2026 | DedeDuarte | 67b46d7 | Merge branch dede |
 | 30/10/2026 | Naoto Ushizaki | 5d57f32 | Feat: percurso euleriano e menu reorganizado |
+| 30/10/2026 | Naoto Ushizaki | 6783ae3 | Remove Hamiltonian cycle option from menu |
