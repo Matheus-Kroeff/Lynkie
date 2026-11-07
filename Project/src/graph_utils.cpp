@@ -372,8 +372,8 @@ void graph_utils::removeA(int v, int w) {
 }
 
 // Opção g: Mostrar conteúdo do arquivo
-void graph_utils::showFileContent() {
-    std::ifstream file("src/grafos.txt");
+void graph_utils::showFileContent(const char* arquivo) {
+    std::ifstream file(arquivo);
 
     if (!file.is_open()) {
         std::cout << "ERRO: Nao foi possivel abrir o arquivo 'grafos.txt' no disco.\n";

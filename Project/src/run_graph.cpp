@@ -41,6 +41,29 @@
 #include <string>
 #include "graph_utils.h"
 
+// Extra fator estético:
+static void closer(){
+    std::cout << R"LOGO(
+  =========================================================
+
+        _  __   __ _   _ _  _____ _____
+       | | \ \ / /| \ | | |/ /_ _| ____|        o---o
+       | |  \ V / |  \| | ' / | ||  _|         / \ / \
+       | |___| |  | |\  | . \ | || |___       o---o---o
+       |_____|_|  |_| \_|_|\_\___|_____|       \ / \ /
+                                                o---o
+
+  =========================================================
+    Developed by:
+       - Andre Doerner Duarte
+       - Matheus Leonardo Cardoso Kroeff
+       - Naoto Ushizaki
+    Powered by:
+       C++17 | Teoria dos Grafos | Steam Games Dataset
+  =========================================================
+)LOGO";
+}
+
 std::string conexidadeParaTexto(graph_utils::Connexity c){
     switch(c){
         case graph_utils::C0: return "Desconexo";
@@ -59,8 +82,8 @@ int main() {
         arquivo = "src/grafos.txt";
     }
 
-    std::cout << "==========================================================="  << std::endl;
-    std::cout << "   SYSTEM RECOMMEND-A-GAME (TEORIA DOS GRAFOS)             "  << std::endl;
+    std::cout << "=========================================================== "  << std::endl;
+    std::cout << "    LYNKIE - Recomendacao de Jogos Indies por Similaridade  "  << std::endl;
     std::cout << "===========================================================\n" << std::endl;
 
     do {
@@ -69,7 +92,6 @@ int main() {
         std::cout << "   [ Arquivo ]\n";
         std::cout << "     1.  Ler dados do arquivo grafos.txt\n";
         std::cout << "     2.  Gravar dados no arquivo grafos.txt\n";
-        std::cout << "     8.  Mostrar conteudo do arquivo\n";
         std::cout << "   [ Edicao do grafo ]\n";
         std::cout << "     3.  Inserir vertice (novo jogo)\n";
         std::cout << "     4.  Inserir aresta (nova similaridade)\n";
@@ -77,6 +99,7 @@ int main() {
         std::cout << "     6.  Remover ultimo vertice\n";
         std::cout << "     7.  Remover aresta\n";
         std::cout << "   [ Visualizacao ]\n";
+        std::cout << "     8.  Mostrar conteudo do arquivo\n";
         std::cout << "     9.  Mostrar grafo (matriz de adjacencia)\n";
         std::cout << "     10. Conexidade do grafo e grafo reduzido\n";
 
@@ -85,10 +108,10 @@ int main() {
         std::cout << "   [ Recomendacao ]\n";
         std::cout << "     11. Recomendador de jogos\n";
         std::cout << "     12. Recomendacao personalizada (PageRank)\n";
-        std::cout << "     15. Caminhos minimos (Floyd)\n";
+        std::cout << "     13. Caminhos minimos (Floyd)\n";
         std::cout << "   [ Caracteristicas do grafo ]\n";
-        std::cout << "     13. Grau dos vertices\n";
-        std::cout << "     14. Cliques\n";
+        std::cout << "     14. Grau dos vertices\n";
+        std::cout << "     15. Cliques\n";
         std::cout << "     16. Coloracao\n";
         std::cout << "     17. Percurso euleriano\n";
 
@@ -153,7 +176,7 @@ int main() {
             }
 
             case 8: // g) Mostrar conteúdo do arquivo
-                grafo.showFileContent();
+                grafo.showFileContent(arquivo.c_str());
                 break;
 
             case 9: // h) Mostrar grafo
@@ -195,15 +218,15 @@ int main() {
                 break;
 
             case 13:
-                grafo.grauVertices();
+                grafo.floyd();
                 break;
 
             case 14:
-                grafo.cliques();
+                grafo.grauVertices();
                 break;
 
             case 15:
-                grafo.floyd();
+                grafo.cliques();
                 break;
 
             case 16:
@@ -216,6 +239,7 @@ int main() {
 
             case 0: // j) Encerrar a aplicação
                 std::cout << "Encerrando a aplicacao...\n";
+                closer();
                 break;
 
             default: {

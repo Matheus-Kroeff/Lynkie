@@ -44,7 +44,7 @@ public:
     void removeA(int v, int w);
 
     // Opção g: Mostrar conteúdo do arquivo
-    void showFileContent();
+    void showFileContent(const char* arquivo);
 
     // Opção h: Mostrar grafo
     void printGraph();
