@@ -76,3 +76,4 @@
 | 07/11/2026 | Naoto Ushizaki | 9ae8cce | Docs(README): Parte 3 com resultados, graficos e animacoes |
 | 16/11/2026 | Naoto Ushizaki | 14eae81 | Add Gephi visualization section to README |
 | 16/11/2026 | Naoto Ushizaki | f63f37a | Add files via upload |
+| 16/11/2026 | Naoto Ushizaki | 3f5dd00 | Add files via upload |
