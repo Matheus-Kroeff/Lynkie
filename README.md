@@ -219,6 +219,20 @@ Na Parte 3, o menu ganhou **recomendações que vão além dos vizinhos diretos*
 
 Os jogos indies (em verde) formam o núcleo do grafo, porque só eles recebem arestas. Os jogos não indies (em laranja) ficam na periferia: recomendam jogos indies, mas nunca são recomendados.
 
+#### Visualização no Gephi
+
+<p align="center">
+  <img src="docs/img/gephi_estrutura.png" alt="Estrutura do grafo do Lynkie no Gephi" width="85%">
+</p>
+
+<p align="center"><em>Estrutura do grafo no Gephi: o tamanho do vértice indica o grau e a espessura da aresta indica a similaridade.</em></p>
+
+<p align="center">
+  <img src="docs/img/gephi_preview_nomes.png" alt="Preview final do grafo do Lynkie no Gephi com os nomes dos jogos" width="85%">
+</p>
+
+<p align="center"><em>Preview final com os nomes dos jogos.</em></p>
+
 #### A amostra e o grafo em números
 
 <table>
