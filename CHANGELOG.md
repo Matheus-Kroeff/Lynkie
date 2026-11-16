@@ -74,3 +74,4 @@
 | 30/10/2026 | Naoto Ushizaki | 6783ae3 | Remove Hamiltonian cycle option from menu |
 | 07/11/2026 | Naoto Ushizaki | 8b57291 | Feat(menu): tela de encerramento com logo e correcao da opcao de show conteudo |
 | 07/11/2026 | Naoto Ushizaki | 9ae8cce | Docs(README): Parte 3 com resultados, graficos e animacoes |
+| 16/11/2026 | Naoto Ushizaki | 14eae81 | Add Gephi visualization section to README |
